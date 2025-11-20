@@ -264,3 +264,49 @@ h6,.h6 {
 [data-a11y-dialog="side-cart"][aria-hidden="true"] [data-a11y-dialog-container] {
     transform: translateX(100%);
 }
+
+/* ======================================================
+   VARIANT SELECTOR STYLES
+   ====================================================== */
+
+/* Selected state for variant options */
+.variant-option--selected {
+    border-color: currentColor !important;
+    font-weight: 600;
+}
+
+/* Color swatch selected state */
+.variant-option--color.variant-option--selected .variant-option__selected-ring {
+    border-color: currentColor;
+}
+
+/* Unavailable/disabled state */
+.variant-option--unavailable {
+    opacity: 0.4;
+    cursor: not-allowed !important;
+    position: relative;
+}
+
+/* Diagonal line through unavailable options */
+.variant-option--unavailable::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: currentColor;
+    transform: translateY(-50%) rotate(-45deg);
+}
+
+/* Size button selected state */
+.variant-option--size.variant-option--selected {
+    background-color: var(--color-button);
+    color: var(--color-button-label);
+}
+
+/* General button variant selected state */
+.variant-option--button.variant-option--selected {
+    background-color: var(--color-button);
+    color: var(--color-button-label);
+}

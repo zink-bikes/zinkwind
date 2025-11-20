@@ -27,14 +27,18 @@
 
             {% when 'price' %}
               {% if product.price != blank %}
-                <span class="text-base font-medium">
-                  {{ product.price | money }}
-                  {% if product.compare_at_price > product.price %}
-                    <span class="ml-2 text-sm text-(--color-accent) line-through">
-                      {{ product.compare_at_price | money }}
-                    </span>
-                  {% endif %}
-                </span>
+                <div data-product-form="{{ section.id }}">
+                  <span class="text-base font-medium">
+                    <span data-product-price>{{ current_variant.price | money }}</span>
+                    {% if current_variant.compare_at_price > current_variant.price %}
+                      <span class="ml-2 text-sm text-(--color-accent) line-through" data-compare-price>
+                        {{ current_variant.compare_at_price | money }}
+                      </span>
+                    {% else %}
+                      <span class="ml-2 text-sm text-(--color-accent) line-through hidden" data-compare-price></span>
+                    {% endif %}
+                  </span>
+                </div>
               {% endif %}
 
             {% when 'description' %}
@@ -55,46 +59,25 @@
               <hr class="border-t border-(--color-accent)">
 
             {% when 'variant_selector' %}
-              {% if product.has_only_default_variant == false %}
-                {% for option in product.options_with_values %}
-                  <div class="flex flex-col gap-1">
-                    <label
-                      for="Option-{{ option.name | handleize }}-{{ section.id }}"
-                      class="underline"
-                    >
-                      {{ option.name }}
-                    </label>
-                    <select
-                      id="Option-{{ option.name | handleize }}-{{ section.id }}"
-                      name="options[{{ option.name }}]"
-                      form="ProductForm-{{ section.id }}"
-                      class="p-2 border"
-                    >
-                      {% for value in option.values %}
-                        <option
-                          value="{{ value }}"
-                          {% if option.selected_value == value %}
-                            selected
-                          {% endif %}
-                        >
-                          {{ value }}
-                        </option>
-                      {% endfor %}
-                    </select>
-                  </div>
-                {% endfor %}
-              {% endif %}
+              {% render 'variant-selector', product: product, section_id: section.id %}
 
             {% when 'add_to_cart' %}
-              {% form 'product', product, id: 'ProductForm-{{ section.id }}', data-cart-form: true %}
+              {% form 'product', product, id: 'ProductForm-{{ section.id }}', data-cart-form: true, data-product-form: section.id %}
                 <div class="flex flex-col gap-2">
                   <input
                     type="submit"
                     value="Add to cart"
                     class="button-primary"
                     data-cart-submit
+                    data-text-available="Add to cart"
+                    data-text-sold-out="Sold out"
                   >
-                  <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}" />
+                  <input
+                    type="hidden"
+                    name="id"
+                    value="{{ product.selected_or_first_available_variant.id }}"
+                    data-variant-id
+                  />
 
                   {% if block.settings.show_dynamic_checkout %}
                     {{ form | payment_button }}

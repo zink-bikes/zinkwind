@@ -1,6 +1,7 @@
 import './simple-slider.js';
 import './read-more.js';
 import { CartManager } from './add-to-cart.js';
+import './variant-selector.js';
 
 // Wait for Alpine.js to be available (loaded from CDN)
 function initCartSystem() {
