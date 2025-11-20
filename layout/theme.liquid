@@ -21,21 +21,60 @@
     
     {% # Side Cart Drawer %}
     {% render 'side-cart' %}
-    
+
     {% # Alpine.js from CDN %}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.2/dist/cdn.min.js"></script>
-    
-    {% # Initialize cart store before Alpine processes DOM %}
-    <script type="module">
-      import { CartStore } from "{{ 'add-to-cart.js' | asset_url }}";
-      
-      // Register store when Alpine initializes (before DOM processing)
+
+    {% # Initialize cart store SYNCHRONOUSLY before Alpine processes DOM %}
+    {% # Using inline initialization to avoid module loading delays %}
+    <script>
+      // Initialize empty cart store immediately during alpine:init
+      // This ensures $store.cart always exists, even if data isn't loaded yet
       document.addEventListener('alpine:init', () => {
-        const cartStore = new CartStore();
-        cartStore.register();
+        if (typeof window.Alpine !== 'undefined') {
+          // Register minimal store structure immediately
+          window.Alpine.store('cart', {
+            items: [],
+            item_count: 0,
+            total_price: 0,
+            formatted_total: '$0.00',
+            loading: true, // Start in loading state
+            error: null,
+
+            updateCart(cartData) {
+              const items = Array.isArray(cartData.items) ? cartData.items : [];
+              this.items = items;
+              this.item_count = cartData.item_count || 0;
+              this.total_price = cartData.total_price || 0;
+              this.formatted_total = this.formatMoney(cartData.total_price || 0);
+              this.error = null;
+              this.loading = false;
+            },
+
+            formatMoney(cents) {
+              if (typeof window.Shopify !== 'undefined' && window.Shopify.formatMoney) {
+                return window.Shopify.formatMoney(cents);
+              }
+              return `$${(cents / 100).toFixed(2)}`;
+            },
+
+            getItem(key) {
+              return this.items.find(item => item.key === key) || null;
+            },
+
+            setLoading(isLoading) {
+              this.loading = isLoading;
+            },
+
+            setError(errorMessage) {
+              this.error = errorMessage;
+            }
+          });
+          console.log('Cart store initialized inline before Alpine processing');
+        }
       });
     </script>
-    
+
     <script type="module" src="{{ 'main.js' | asset_url }}"></script>
   </body>
 </html>

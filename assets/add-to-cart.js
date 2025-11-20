@@ -259,9 +259,16 @@ export class CartStore {
    */
   register() {
     if (typeof window.Alpine !== 'undefined') {
-      window.Alpine.store('cart', this.store);
+      // Check if store already exists to avoid duplicate registration
+      if (!window.Alpine.store('cart')) {
+        window.Alpine.store('cart', this.store);
+        console.log('CartStore: Registered new cart store with Alpine');
+      } else {
+        console.log('CartStore: Store already registered, skipping');
+      }
       return true;
     }
+    console.warn('CartStore: Alpine not available yet');
     return false;
   }
 }
@@ -440,15 +447,9 @@ export class SideCart {
 export class CartManager {
   constructor() {
     this.api = new CartAPI();
-    // Use existing store if already registered, otherwise create new one
-    if (typeof window.Alpine !== 'undefined' && window.Alpine.store('cart')) {
-      // Store already exists, we'll access it via Alpine.store()
-      this.store = null; // We'll access via Alpine.store('cart')
-    } else {
-      // Create new store (shouldn't happen if registered in alpine:init)
-      this.store = new CartStore();
-      this.store.register();
-    }
+    // Store should already be registered inline in theme.liquid
+    // We'll always access it via Alpine.store('cart')
+    this.store = null;
     this.sideCart = new SideCart();
     this.init();
   }
@@ -465,20 +466,22 @@ export class CartManager {
    * Register store with Alpine.js when it's available
    */
   registerStore() {
-    // Store is already registered in layout/theme.liquid via alpine:init
-    // This method is kept for compatibility but the store should already exist
+    // Store is already registered inline in layout/theme.liquid via alpine:init
+    // Just wait for it to be available and load the initial cart data
     if (typeof window.Alpine !== 'undefined' && window.Alpine.store('cart')) {
-      // Store already registered, load initial cart
+      console.log('CartManager: Store already available, loading cart data');
       this.loadInitialCart();
     } else {
       // Wait for Alpine to be ready
       document.addEventListener('alpine:init', () => {
+        console.log('CartManager: Alpine initialized, loading cart data');
         this.loadInitialCart();
       });
-      
+
       // Also try after a short delay in case alpine:init already fired
       setTimeout(() => {
         if (typeof window.Alpine !== 'undefined' && window.Alpine.store('cart')) {
+          console.log('CartManager: Store available after delay, loading cart data');
           this.loadInitialCart();
         }
       }, 100);
