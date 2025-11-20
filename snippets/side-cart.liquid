@@ -74,7 +74,7 @@
 
         <!-- Empty Cart -->
         <div
-          x-show="!$store.cart.loading && $store.cart.items.length === 0"
+          x-show="$store.cart.items.length === 0"
           class="text-center py-12"
         >
           <p class="text-gray-600 mb-4">Your cart is empty</p>
@@ -92,11 +92,28 @@
         <div x-show="false" x-text="'Debug - Items: ' + $store.cart.items.length + ', Item count: ' + $store.cart.item_count + ', Loading: ' + $store.cart.loading"></div>
 
         <div
-          x-show="!$store.cart.loading && $store.cart.items.length > 0"
+          x-show="$store.cart.items.length > 0"
           class="space-y-4"
         >
           <template x-for="item in $store.cart.items" :key="item.key">
-            <div class="flex gap-4 border-b pb-4">
+            <div
+              class="flex gap-4 border-b pb-4 relative transition-opacity duration-200"
+              :class="{ 'opacity-60': $store.cart.isItemUpdating(item.key) }"
+            >
+              <!-- Updating Overlay -->
+              <div
+                x-show="$store.cart.isItemUpdating(item.key)"
+                class="absolute inset-0 flex items-center justify-center bg-white/50 rounded z-10"
+              >
+                <div class="flex items-center gap-2 text-sm text-gray-600">
+                  <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Updating...</span>
+                </div>
+              </div>
+
               <!-- Product Image -->
               <div class="w-20 h-20 flex-shrink-0">
                 <img
@@ -120,8 +137,8 @@
                   <button
                     type="button"
                     @click="cartManager?.decrementQuantity(item.key)"
-                    class="w-8 h-8 flex items-center justify-center border rounded hover:bg-gray-100 transition"
-                    :disabled="$store.cart.loading || item.quantity <= 1"
+                    class="w-8 h-8 flex items-center justify-center border rounded hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    :disabled="$store.cart.isItemUpdating(item.key) || item.quantity <= 1"
                     aria-label="Decrease quantity"
                   >
                     −
@@ -133,8 +150,8 @@
                   <button
                     type="button"
                     @click="cartManager?.incrementQuantity(item.key)"
-                    class="w-8 h-8 flex items-center justify-center border rounded hover:bg-gray-100 transition"
-                    :disabled="$store.cart.loading"
+                    class="w-8 h-8 flex items-center justify-center border rounded hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    :disabled="$store.cart.isItemUpdating(item.key)"
                     aria-label="Increase quantity"
                   >
                     +
@@ -150,8 +167,8 @@
                   <button
                     type="button"
                     @click="cartManager?.removeItem(item.key)"
-                    class="text-sm text-red-600 hover:text-red-800 underline"
-                    :disabled="$store.cart.loading"
+                    class="text-sm text-red-600 hover:text-red-800 underline disabled:opacity-50 disabled:cursor-not-allowed"
+                    :disabled="$store.cart.isItemUpdating(item.key)"
                   >
                     Remove
                   </button>
@@ -164,7 +181,7 @@
 
       <!-- Footer with Totals -->
       <div
-        x-show="!$store.cart.loading && $store.cart.items.length > 0"
+        x-show="$store.cart.items.length > 0"
         class="border-t p-4 space-y-4"
       >
         <!-- Subtotal -->
