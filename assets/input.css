@@ -309,3 +309,38 @@ h6,.h6 {
     background-color: var(--color-button);
     color: var(--color-button-label);
 }
+
+/* ======================================================
+   CAROUSEL STYLES
+   ====================================================== */
+
+/* Pagination dots */
+.carousel-dot {
+    transition-property: opacity;
+    border: none;
+    background-color: currentColor;
+}
+
+.carousel-dot:hover {
+    opacity: 0.7 !important;
+}
+
+.carousel-dot:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+/* Fade transition for carousel slides */
+.carousel-slide {
+    transition-property: opacity;
+}
+
+/* Ensure slides maintain aspect ratio during transitions */
+.carousel-track {
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+}
+
+.carousel-slide {
+    scroll-snap-align: start;
+}

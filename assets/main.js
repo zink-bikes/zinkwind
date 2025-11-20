@@ -1,4 +1,5 @@
 import './simple-slider.js';
+import './carousel-slider.js';
 import './read-more.js';
 import { CartManager } from './add-to-cart.js';
 import './variant-selector.js';

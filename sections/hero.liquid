@@ -1,19 +1,21 @@
 {% if section.settings.hero_image_desktop or section.settings.hero_image_mobile %}
   <section class="color-scheme color-scheme--{{ section.settings.color_scheme }} stack relative overflow-hidden {% unless section.settings.full_width %}page-width{% endunless %}">
-    <div class="max-h-[60vh]">
+    <div class="{% if section.settings.height_behavior == 'fixed' %}h-[60vh]{% elsif section.settings.height_behavior == 'max' %}max-h-[60vh]{% endif %}">
+      {% assign mobile_classes = 'w-full h-full block md:hidden ' | append: section.settings.image_fit %}
       {% if section.settings.hero_image_mobile %}
         {{
           section.settings.hero_image_mobile
           | image_url: width: 1200
-          | image_tag: alt: 'Hero image (mobile)', class: 'w-full h-full object-cover block md:hidden'
+          | image_tag: alt: 'Hero image (mobile)', class: mobile_classes
         }}
       {% endif %}
 
+      {% assign desktop_classes = 'w-full h-full hidden md:block ' | append: section.settings.image_fit %}
       {% if section.settings.hero_image_desktop %}
         {{
           section.settings.hero_image_desktop
           | image_url: width: 2000
-          | image_tag: alt: 'Hero image (desktop)', class: 'w-full h-full object-cover hidden md:block'
+          | image_tag: alt: 'Hero image (desktop)', class: desktop_classes
         }}
       {% endif %}
     </div>
@@ -67,6 +69,42 @@
       "type": "image_picker",
       "id": "hero_image_mobile",
       "label": "Hero image (mobile)"
+    },
+    {
+      "type": "select",
+      "id": "height_behavior",
+      "label": "Height behavior",
+      "default": "max",
+      "options": [
+        {
+          "value": "auto",
+          "label": "Auto (match image height)"
+        },
+        {
+          "value": "fixed",
+          "label": "Fixed (60vh)"
+        },
+        {
+          "value": "max",
+          "label": "Max height (60vh)"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "default": "object-cover",
+      "options": [
+        {
+          "value": "object-cover",
+          "label": "Cover (crop to fill)"
+        },
+        {
+          "value": "object-contain",
+          "label": "Contain (fit without crop)"
+        }
+      ]
     },
     {
       "type": "checkbox",

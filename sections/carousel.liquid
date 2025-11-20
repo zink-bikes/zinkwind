@@ -1,0 +1,649 @@
+<section class="color-scheme color-scheme--{{ section.settings.color_scheme }} {{ section.settings.padding_top }} {{ section.settings.padding_bottom }} {{ section.settings.margin_top }} {{ section.settings.margin_bottom }} {{ section.settings.border_width }} {{ section.settings.border_radius }} relative overflow-hidden {% unless section.settings.full_width %}page-width{% endunless %}">
+  {% if section.blocks.size > 0 %}
+    <carousel-slider
+      class="relative flex flex-col"
+      data-slides-mobile="{{ section.settings.slides_per_view_mobile }}"
+      data-slides-tablet="{{ section.settings.slides_per_view_tablet }}"
+      data-slides-desktop="{{ section.settings.slides_per_view_desktop }}"
+      data-autoplay="{{ section.settings.enable_autoplay }}"
+      data-autoplay-delay="{{ section.settings.autoplay_delay }}"
+      data-pause-on-hover="{{ section.settings.pause_on_hover }}"
+      data-transition="{{ section.settings.transition_effect }}"
+      data-transition-duration="{{ section.settings.transition_duration }}"
+      data-show-arrows="{{ section.settings.show_arrows }}"
+      data-show-pagination="{{ section.settings.show_pagination }}"
+    >
+      <div
+        class="carousel-track flex {{ section.settings.gap_between_slides }} overflow-x-auto scroll-smooth snap-x snap-mandatory focus:outline-none no-scrollbar {{ section.settings.transition_duration }}"
+        tabindex="0"
+        role="region"
+        aria-label="Carousel"
+      >
+        {% for block in section.blocks %}
+          <div
+            class="carousel-slide snap-start shrink-0 relative stack overflow-hidden"
+            {{ block.shopify_attributes }}
+            data-slide-index="{{ forloop.index0 }}"
+          >
+            {%- comment -%} Media Container {%- endcomment -%}
+            <div class="{% if section.settings.height_behavior == 'fixed' %}h-[60vh]{% elsif section.settings.height_behavior == 'max' %}max-h-[60vh]{% endif %}">
+              {% if block.settings.content_type == 'video' %}
+                {%- comment -%} Video for Mobile {%- endcomment -%}
+                {% if block.settings.video_mobile %}
+                  <div class="w-full h-full block md:hidden">
+                    {{ block.settings.video_mobile | video_tag: autoplay: true, loop: true, muted: true, controls: false, class: 'w-full h-full object-cover' }}
+                  </div>
+                {% endif %}
+
+                {%- comment -%} Video for Desktop {%- endcomment -%}
+                {% if block.settings.video_desktop %}
+                  <div class="w-full h-full hidden md:block">
+                    {{ block.settings.video_desktop | video_tag: autoplay: true, loop: true, muted: true, controls: false, class: 'w-full h-full object-cover' }}
+                  </div>
+                {% endif %}
+              {% else %}
+                {%- comment -%} Image for Mobile {%- endcomment -%}
+                {% assign mobile_classes = 'w-full h-full block md:hidden ' | append: section.settings.image_fit %}
+                {% if block.settings.image_mobile %}
+                  {{
+                    block.settings.image_mobile
+                    | image_url: width: 1200
+                    | image_tag: alt: block.settings.heading, class: mobile_classes
+                  }}
+                {% endif %}
+
+                {%- comment -%} Image for Desktop {%- endcomment -%}
+                {% assign desktop_classes = 'w-full h-full hidden md:block ' | append: section.settings.image_fit %}
+
+                {% if block.settings.image_desktop %}
+                  {{
+                    block.settings.image_desktop
+                    | image_url: width: 2000
+                    | image_tag: alt: block.settings.heading, class: desktop_classes
+                  }}
+                {% endif %}
+              {% endif %}
+            </div>
+
+            {%- comment -%} Content Overlay {%- endcomment -%}
+            <div class="absolute inset-0 flex z-10 {{ block.settings.content_vertical_position }} {{ block.settings.content_horizontal_position }}">
+              <div class="w-full {% unless section.settings.full_width %}page-width{% endunless %} py-default px-default flex flex-col gap-3">
+                <div class="color-scheme color-scheme--{{ block.settings.color_scheme }} flex flex-col gap-3 w-full {{ block.settings.content_width }} {{ block.settings.content_horizontal_position }} {{ block.settings.content_vertical_position }}">
+                  {% if block.settings.heading != blank %}
+                    <h2 class="">
+                      {{ block.settings.heading }}
+                    </h2>
+                  {% endif %}
+
+                  {% if block.settings.subheading != blank %}
+                    <p class="">
+                      {{ block.settings.subheading }}
+                    </p>
+                  {% endif %}
+
+                  {% if block.settings.button_text != blank and block.settings.button_link != blank %}
+                    <div class="flex flex-wrap {{ block.settings.content_horizontal_position | replace: 'items-', 'justify-' }} gap-3">
+                      <a href="{{ block.settings.button_link }}" class="button-primary">
+                        {{ block.settings.button_text }}
+                      </a>
+                      {% if block.settings.secondary_button_text != blank %}
+                        <a href="{{ block.settings.secondary_button_link }}" class="button-secondary">
+                          {{ block.settings.secondary_button_text }}
+                        </a>
+                      {% endif %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            {%- comment -%} Optional Overlay {%- endcomment -%}
+            {% if block.settings.overlay_enabled %}
+              <div class="absolute top-0 left-0 w-full h-full bg-black {{ block.settings.overlay_opacity }}"></div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+
+      {%- comment -%} Navigation Arrows {%- endcomment -%}
+      {% if section.settings.show_arrows %}
+        <div class="carousel-nav flex justify-between w-full {% if section.settings.arrow_position == 'overlay' %}absolute top-1/2 -translate-y-1/2 left-0 px-4 pointer-events-none{% else %}mt-4{% endif %}">
+          <button
+            class="carousel-prev transition-opacity {{ section.settings.transition_duration }} ease-in-out rotate-180 cursor-pointer slider-nav aspect-square button-secondary {% if section.settings.arrow_position == 'overlay' %}pointer-events-auto{% endif %}"
+            aria-label="Previous slide"
+          >
+            {{ 'icon-arrow.svg' | inline_asset_content }}
+          </button>
+          <button
+            class="carousel-next transition-opacity {{ section.settings.transition_duration }} ease-in-out cursor-pointer slider-nav aspect-square button-secondary {% if section.settings.arrow_position == 'overlay' %}pointer-events-auto{% endif %}"
+            aria-label="Next slide"
+          >
+            {{ 'icon-arrow.svg' | inline_asset_content }}
+          </button>
+        </div>
+      {% endif %}
+
+      {%- comment -%} Pagination Dots {%- endcomment -%}
+      {% if section.settings.show_pagination %}
+        <div class="carousel-pagination flex justify-center gap-2 {% if section.settings.arrow_position == 'overlay' and section.settings.show_arrows == false %}absolute bottom-4 left-0 w-full{% else %}mt-4{% endif %}" role="tablist" aria-label="Slide navigation">
+          {% for block in section.blocks %}
+            <button
+              class="carousel-dot w-3 h-3 rounded-full bg-current opacity-30 transition-opacity {{ section.settings.transition_duration }} cursor-pointer"
+              data-dot-index="{{ forloop.index0 }}"
+              role="tab"
+              aria-label="Go to slide {{ forloop.index }}"
+              aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+            ></button>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </carousel-slider>
+  {% else %}
+    <div class="page-width p-default text-center">
+      <p>Add carousel slides to get started.</p>
+    </div>
+  {% endif %}
+</section>
+
+{% schema %}
+{
+  "name": "Carousel",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout Settings"
+    },
+    {
+      "type": "range",
+      "id": "slides_per_view_mobile",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 1,
+      "label": "Slides per view (Mobile)"
+    },
+    {
+      "type": "range",
+      "id": "slides_per_view_tablet",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2,
+      "label": "Slides per view (Tablet)"
+    },
+    {
+      "type": "range",
+      "id": "slides_per_view_desktop",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3,
+      "label": "Slides per view (Desktop)"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Full width section",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "height_behavior",
+      "label": "Height behavior",
+      "default": "auto",
+      "options": [
+        {
+          "value": "auto",
+          "label": "Auto (match content)"
+        },
+        {
+          "value": "fixed",
+          "label": "Fixed (60vh)"
+        },
+        {
+          "value": "max",
+          "label": "Max height (60vh)"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "default": "object-cover",
+      "options": [
+        {
+          "value": "object-cover",
+          "label": "Cover (crop to fill)"
+        },
+        {
+          "value": "object-contain",
+          "label": "Contain (fit without crop)"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "gap_between_slides",
+      "label": "Gap between slides",
+      "default": "gap-4",
+      "options": [
+        {
+          "value": "gap-0",
+          "label": "None"
+        },
+        {
+          "value": "gap-2",
+          "label": "Small"
+        },
+        {
+          "value": "gap-4",
+          "label": "Medium"
+        },
+        {
+          "value": "gap-6",
+          "label": "Large"
+        },
+        {
+          "value": "gap-8",
+          "label": "Extra Large"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Navigation Settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show navigation arrows",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "arrow_position",
+      "label": "Arrow position",
+      "default": "below",
+      "options": [
+        {
+          "value": "overlay",
+          "label": "Overlay on carousel"
+        },
+        {
+          "value": "below",
+          "label": "Below carousel"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_pagination",
+      "label": "Show pagination dots",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Animation Settings"
+    },
+    {
+      "type": "select",
+      "id": "transition_effect",
+      "label": "Transition effect",
+      "default": "scroll",
+      "options": [
+        {
+          "value": "scroll",
+          "label": "Scroll"
+        },
+        {
+          "value": "fade",
+          "label": "Fade"
+        },
+        {
+          "value": "slide",
+          "label": "Slide"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "transition_duration",
+      "label": "Transition duration",
+      "default": "duration-500",
+      "options": [
+        {
+          "value": "duration-300",
+          "label": "Fast (300ms)"
+        },
+        {
+          "value": "duration-500",
+          "label": "Normal (500ms)"
+        },
+        {
+          "value": "duration-700",
+          "label": "Slow (700ms)"
+        },
+        {
+          "value": "duration-1000",
+          "label": "Very Slow (1000ms)"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_autoplay",
+      "label": "Enable autoplay",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autoplay_delay",
+      "min": 2000,
+      "max": 9000,
+      "step": 1000,
+      "unit": "ms",
+      "default": 5000,
+      "label": "Autoplay delay"
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "Pause autoplay on hover",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Section Styling"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme"
+    },
+    {
+      "type": "select",
+      "id": "padding_top",
+      "label": "Padding top",
+      "default": "pt-8",
+      "options": [
+        { "value": "pt-0", "label": "None" },
+        { "value": "pt-4", "label": "Small" },
+        { "value": "pt-8", "label": "Medium" },
+        { "value": "pt-12", "label": "Large" },
+        { "value": "pt-16", "label": "Extra Large" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "padding_bottom",
+      "label": "Padding bottom",
+      "default": "pb-8",
+      "options": [
+        { "value": "pb-0", "label": "None" },
+        { "value": "pb-4", "label": "Small" },
+        { "value": "pb-8", "label": "Medium" },
+        { "value": "pb-12", "label": "Large" },
+        { "value": "pb-16", "label": "Extra Large" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "margin_top",
+      "label": "Margin top",
+      "default": "mt-0",
+      "options": [
+        { "value": "mt-0", "label": "None" },
+        { "value": "mt-4", "label": "Small" },
+        { "value": "mt-8", "label": "Medium" },
+        { "value": "mt-12", "label": "Large" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "margin_bottom",
+      "label": "Margin bottom",
+      "default": "mb-0",
+      "options": [
+        { "value": "mb-0", "label": "None" },
+        { "value": "mb-4", "label": "Small" },
+        { "value": "mb-8", "label": "Medium" },
+        { "value": "mb-12", "label": "Large" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "border_width",
+      "label": "Border width",
+      "default": "border-0",
+      "options": [
+        { "value": "border-0", "label": "None" },
+        { "value": "border", "label": "Thin" },
+        { "value": "border-2", "label": "Medium" },
+        { "value": "border-4", "label": "Thick" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "border_radius",
+      "label": "Border radius",
+      "default": "rounded-none",
+      "options": [
+        { "value": "rounded-none", "label": "None" },
+        { "value": "rounded", "label": "Small" },
+        { "value": "rounded-lg", "label": "Medium" },
+        { "value": "rounded-xl", "label": "Large" },
+        { "value": "rounded-2xl", "label": "Extra Large" }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Media Settings"
+        },
+        {
+          "type": "select",
+          "id": "content_type",
+          "label": "Content type",
+          "default": "image",
+          "options": [
+            {
+              "value": "image",
+              "label": "Image"
+            },
+            {
+              "value": "video",
+              "label": "Video"
+            }
+          ]
+        },
+        {
+          "type": "image_picker",
+          "id": "image_desktop",
+          "label": "Image (Desktop)",
+          "info": "Used when content type is Image"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_mobile",
+          "label": "Image (Mobile)",
+          "info": "Used when content type is Image"
+        },
+        {
+          "type": "video",
+          "id": "video_desktop",
+          "label": "Video (Desktop)",
+          "info": "Used when content type is Video"
+        },
+        {
+          "type": "video",
+          "id": "video_mobile",
+          "label": "Video (Mobile)",
+          "info": "Used when content type is Video"
+        },
+        {
+          "type": "checkbox",
+          "id": "overlay_enabled",
+          "label": "Enable overlay",
+          "default": false
+        },
+        {
+          "type": "select",
+          "id": "overlay_opacity",
+          "label": "Overlay opacity",
+          "default": "opacity-50",
+          "options": [
+            { "value": "opacity-20", "label": "20%" },
+            { "value": "opacity-30", "label": "30%" },
+            { "value": "opacity-40", "label": "40%" },
+            { "value": "opacity-50", "label": "50%" },
+            { "value": "opacity-60", "label": "60%" },
+            { "value": "opacity-70", "label": "70%" }
+          ]
+        },
+        {
+          "type": "header",
+          "content": "Text Content"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading"
+        },
+        {
+          "type": "textarea",
+          "id": "subheading",
+          "label": "Subheading"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Primary button text"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Primary button link"
+        },
+        {
+          "type": "text",
+          "id": "secondary_button_text",
+          "label": "Secondary button text"
+        },
+        {
+          "type": "url",
+          "id": "secondary_button_link",
+          "label": "Secondary button link"
+        },
+        {
+          "type": "header",
+          "content": "Content Layout"
+        },
+        {
+          "type": "select",
+          "id": "content_horizontal_position",
+          "label": "Content horizontal position",
+          "default": "items-center",
+          "options": [
+            {
+              "value": "items-start",
+              "label": "Left"
+            },
+            {
+              "value": "items-center",
+              "label": "Center"
+            },
+            {
+              "value": "items-end",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "content_vertical_position",
+          "label": "Content vertical position",
+          "default": "justify-center",
+          "options": [
+            {
+              "value": "justify-start",
+              "label": "Top"
+            },
+            {
+              "value": "justify-center",
+              "label": "Middle"
+            },
+            {
+              "value": "justify-end",
+              "label": "Bottom"
+            }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "content_width",
+          "label": "Content width",
+          "default": "md:w-2/3",
+          "options": [
+            {
+              "value": "md:w-full",
+              "label": "Full width"
+            },
+            {
+              "value": "md:w-3/4",
+              "label": "3/4 width"
+            },
+            {
+              "value": "md:w-2/3",
+              "label": "2/3 width"
+            },
+            {
+              "value": "md:w-1/2",
+              "label": "1/2 width"
+            }
+          ]
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "Color scheme"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Carousel",
+      "category": "Design",
+      "blocks": [
+        {
+          "type": "slide",
+          "settings": {
+            "heading": "Slide 1",
+            "subheading": "Add your content here"
+          }
+        },
+        {
+          "type": "slide",
+          "settings": {
+            "heading": "Slide 2",
+            "subheading": "Add your content here"
+          }
+        },
+        {
+          "type": "slide",
+          "settings": {
+            "heading": "Slide 3",
+            "subheading": "Add your content here"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

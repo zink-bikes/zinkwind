@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="{{ request.locale.iso_code }}">
   <head>
-    {% # Inlined CSS Variables %}
     {% render 'css-variables' %}
 
     {% # Load and preload the critical CSS %}
@@ -14,6 +13,7 @@
 
   <body class="color-scheme color-scheme--{{ settings.color_theme_scheme }}">
     {% sections 'header-group' %}
+    {{ shop.metafields.app--296033615873--product-discount.function-configuration | json }}
 
     {{ content_for_layout }}
 
@@ -22,7 +22,7 @@
     {% # Side Cart Drawer %}
     {% render 'side-cart' %}
 
-    {% # Alpine.js from CDN %}
+    {% # Block any PC banners from displaying in development mode %}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.2/dist/cdn.min.js"></script>
     {%- if theme.role == "development" or request.design_mode -%}
       {% style %}
@@ -31,6 +31,7 @@
         }
       {% endstyle %}
     {%- endif -%}
+
     {% # Initialize cart store SYNCHRONOUSLY before Alpine processes DOM %}
     {% # Using inline initialization to avoid module loading delays %}
     <script>
@@ -91,7 +92,7 @@
               return this.updatingItems.has(key);
             }
           });
-          console.log('Cart store initialized inline before Alpine processing');
+          //console.log('Cart store initialized inline before Alpine processing');
         }
       });
     </script>
