@@ -182,6 +182,7 @@ export class CartStore {
       formatted_total: '$0.00',
       loading: false,
       error: null,
+      updatingItems: new Set(), // Track which items are being updated by key
 
       /**
        * Update cart state from API response
@@ -250,6 +251,29 @@ export class CartStore {
        */
       setError(errorMessage) {
         this.error = errorMessage;
+      },
+
+      /**
+       * Mark an item as updating
+       * @param {string} key - Line item key
+       */
+      setItemUpdating(key, isUpdating) {
+        if (isUpdating) {
+          this.updatingItems.add(key);
+        } else {
+          this.updatingItems.delete(key);
+        }
+        // Force reactivity by creating a new Set
+        this.updatingItems = new Set(this.updatingItems);
+      },
+
+      /**
+       * Check if an item is updating
+       * @param {string} key - Line item key
+       * @returns {boolean}
+       */
+      isItemUpdating(key) {
+        return this.updatingItems.has(key);
       },
     };
   }
@@ -772,12 +796,25 @@ export class CartManager {
   async updateQuantity(key, quantity) {
     const cartStore = this.getCartStore();
     if (cartStore) {
-      cartStore.setLoading(true);
+      // Use item-specific loading state instead of global loading
+      cartStore.setItemUpdating(key, true);
     }
 
     try {
       const cart = await this.api.updateItem(key, quantity);
-      if (cartStore) {
+
+      // Update Alpine store directly for reactivity
+      if (cartStore && typeof window.Alpine !== 'undefined') {
+        const store = window.Alpine.store('cart');
+        if (store) {
+          const items = Array.isArray(cart.items) ? cart.items : [];
+          store.items = items;
+          store.item_count = cart.item_count || 0;
+          store.total_price = cart.total_price || 0;
+          store.formatted_total = store.formatMoney(cart.total_price || 0);
+        }
+        cartStore.updateCart(cart);
+      } else if (cartStore) {
         cartStore.updateCart(cart);
       }
       return cart;
@@ -789,7 +826,8 @@ export class CartManager {
       throw error;
     } finally {
       if (cartStore) {
-        cartStore.setLoading(false);
+        // Clear item-specific loading state
+        cartStore.setItemUpdating(key, false);
       }
     }
   }
@@ -801,12 +839,13 @@ export class CartManager {
   async removeItem(key) {
     const cartStore = this.getCartStore();
     if (cartStore) {
-      cartStore.setLoading(true);
+      // Use item-specific loading state instead of global loading
+      cartStore.setItemUpdating(key, true);
     }
 
     try {
       const cart = await this.api.removeItem(key);
-      
+
       // Update Alpine store directly for reactivity
       if (cartStore && typeof window.Alpine !== 'undefined') {
         const store = window.Alpine.store('cart');
@@ -830,7 +869,8 @@ export class CartManager {
       throw error;
     } finally {
       if (cartStore) {
-        cartStore.setLoading(false);
+        // Clear item-specific loading state
+        cartStore.setItemUpdating(key, false);
       }
     }
   }

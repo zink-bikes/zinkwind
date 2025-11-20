@@ -24,7 +24,13 @@
 
     {% # Alpine.js from CDN %}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.2/dist/cdn.min.js"></script>
-
+    {%- if theme.role == "development" or request.design_mode -%}
+      {% style %}
+        #shopify-pc__banner {
+          display: none !important;
+        }
+      {% endstyle %}
+    {%- endif -%}
     {% # Initialize cart store SYNCHRONOUSLY before Alpine processes DOM %}
     {% # Using inline initialization to avoid module loading delays %}
     <script>
@@ -40,6 +46,7 @@
             formatted_total: '$0.00',
             loading: true, // Start in loading state
             error: null,
+            updatingItems: new Set(), // Track which items are being updated by key
 
             updateCart(cartData) {
               const items = Array.isArray(cartData.items) ? cartData.items : [];
@@ -68,6 +75,20 @@
 
             setError(errorMessage) {
               this.error = errorMessage;
+            },
+
+            setItemUpdating(key, isUpdating) {
+              if (isUpdating) {
+                this.updatingItems.add(key);
+              } else {
+                this.updatingItems.delete(key);
+              }
+              // Force reactivity by creating a new Set
+              this.updatingItems = new Set(this.updatingItems);
+            },
+
+            isItemUpdating(key) {
+              return this.updatingItems.has(key);
             }
           });
           console.log('Cart store initialized inline before Alpine processing');
