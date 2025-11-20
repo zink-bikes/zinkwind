@@ -21,18 +21,6 @@
     aria-labelledby="cart-title"
     class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-xl overflow-y-auto"
     x-data="{
-      get cart() {
-        // Direct access to store for better reactivity
-        const store = $store.cart;
-        return store || { 
-          items: [], 
-          item_count: 0, 
-          total_price: 0, 
-          formatted_total: '$0.00', 
-          loading: false, 
-          error: null 
-        };
-      },
       get cartManager() {
         return window.cartManager ? window.cartManager.getMethods() : null;
       },
@@ -73,20 +61,20 @@
       <!-- Cart Items -->
       <div class="flex-1 overflow-y-auto p-4">
         <!-- Loading State -->
-        <div x-show="cart.loading" class="text-center py-8">
+        <div x-show="$store.cart.loading" class="text-center py-8">
           <p class="text-sm text-gray-600">Loading...</p>
         </div>
 
         <!-- Error State -->
         <div
-          x-show="cart.error"
+          x-show="$store.cart.error"
           class="mb-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800"
-          x-text="cart.error"
+          x-text="$store.cart.error"
         ></div>
 
         <!-- Empty Cart -->
         <div
-          x-show="!cart.loading && cart.items.length === 0"
+          x-show="!$store.cart.loading && $store.cart.items.length === 0"
           class="text-center py-12"
         >
           <p class="text-gray-600 mb-4">Your cart is empty</p>
@@ -101,13 +89,13 @@
 
         <!-- Cart Items List -->
         <!-- Debug: Cart state -->
-        <div x-show="false" x-text="'Debug - Items: ' + cart.items.length + ', Item count: ' + cart.item_count + ', Loading: ' + cart.loading"></div>
-        
+        <div x-show="false" x-text="'Debug - Items: ' + $store.cart.items.length + ', Item count: ' + $store.cart.item_count + ', Loading: ' + $store.cart.loading"></div>
+
         <div
-          x-show="!cart.loading && cart.items.length > 0"
+          x-show="!$store.cart.loading && $store.cart.items.length > 0"
           class="space-y-4"
         >
-          <template x-for="item in cart.items" :key="item.key">
+          <template x-for="item in $store.cart.items" :key="item.key">
             <div class="flex gap-4 border-b pb-4">
               <!-- Product Image -->
               <div class="w-20 h-20 flex-shrink-0">
@@ -133,7 +121,7 @@
                     type="button"
                     @click="cartManager?.decrementQuantity(item.key)"
                     class="w-8 h-8 flex items-center justify-center border rounded hover:bg-gray-100 transition"
-                    :disabled="cart.loading || item.quantity <= 1"
+                    :disabled="$store.cart.loading || item.quantity <= 1"
                     aria-label="Decrease quantity"
                   >
                     −
@@ -146,7 +134,7 @@
                     type="button"
                     @click="cartManager?.incrementQuantity(item.key)"
                     class="w-8 h-8 flex items-center justify-center border rounded hover:bg-gray-100 transition"
-                    :disabled="cart.loading"
+                    :disabled="$store.cart.loading"
                     aria-label="Increase quantity"
                   >
                     +
@@ -163,7 +151,7 @@
                     type="button"
                     @click="cartManager?.removeItem(item.key)"
                     class="text-sm text-red-600 hover:text-red-800 underline"
-                    :disabled="cart.loading"
+                    :disabled="$store.cart.loading"
                   >
                     Remove
                   </button>
@@ -176,13 +164,13 @@
 
       <!-- Footer with Totals -->
       <div
-        x-show="!cart.loading && cart.items.length > 0"
+        x-show="!$store.cart.loading && $store.cart.items.length > 0"
         class="border-t p-4 space-y-4"
       >
         <!-- Subtotal -->
         <div class="flex justify-between text-lg font-semibold">
           <span>Subtotal</span>
-          <span x-text="cart.formatted_total"></span>
+          <span x-text="$store.cart.formatted_total"></span>
         </div>
 
         <!-- Checkout Button -->
