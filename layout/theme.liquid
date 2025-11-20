@@ -10,7 +10,9 @@
 
     {{ content_for_header }}
 
-    {% assign bundle_config = shop.metafields["app--296033615873--product-discount"]["function-configuration"] | parse_json %}
+    
+    {% assign raw = shop.metafields["app--296033615873--product-discount"]["function-configuration"] %}
+    {% assign bundle_config = raw | parse_json %}
 
   </head>
 
