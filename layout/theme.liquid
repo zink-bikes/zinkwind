@@ -14,7 +14,7 @@
   </head>
 
   <body class="color-scheme color-scheme--{{ settings.color_theme_scheme }}">
-    <p>LOOP:{{ shop.metafields["app--296033615873--product-discount"]["function-configuration"] | json }}</p>
+    <p>LOOP:{{ shop.metafields["app--296033615873--product-discount"]["function-configuration"].bundles | json }}</p>
 
     {% sections 'header-group' %}
 
