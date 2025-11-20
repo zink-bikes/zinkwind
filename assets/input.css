@@ -243,7 +243,6 @@ h6,.h6 {
     height: 100vh;
     width: 100%;
     max-width: 28rem;
-    background: white;
     transform: translateX(100%);
     transition: transform 0.3s ease;
     box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
