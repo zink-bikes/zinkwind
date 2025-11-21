@@ -3,10 +3,31 @@
 >
   <div class="page-width">
     <div class="flex items-center justify-between gap-5 min-h-10 py-2">
+
+      {% # Hamburger Menu Button - Left Position %}
+      {% if section.settings.hamburger_position == 'left' %}
+        <button
+          type="button"
+          data-menu-trigger
+          aria-label="Menu"
+          class="{% unless section.settings.enable_hamburger_all_devices %}md:hidden{% endunless %} transition hover:opacity-80 w-6 h-6 flex items-center justify-center
+          {% if section.settings.logo_position == 'center' %}
+            order-1
+          {% else %}
+            order-1
+          {% endif %}
+          "
+        >
+          <span class="w-6 h-6 [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current">
+            {{ 'icon-menu.svg' | inline_asset_content }}
+          </span>
+        </button>
+      {% endif %}
+
       <!-- Menu -->
       {% if section.settings.menu != blank %}
         <nav
-          class="hidden md:block
+          class="{% if section.settings.enable_hamburger_all_devices %}hidden{% else %}hidden md:block{% endif %}
           {% if section.settings.logo_position == 'center' %}
             order-1 flex-1
           {% else %}
@@ -82,8 +103,8 @@
           data-cart-trigger
           aria-label="Cart"
           class="relative transition hover:opacity-80 w-6 h-6 flex items-center justify-center"
-          x-data="{ 
-            get cart() { 
+          x-data="{
+            get cart() {
               return $store.cart || { item_count: 0, items: [], loading: false, error: null, formatted_total: '$0.00' };
             }
           }"
@@ -98,10 +119,27 @@
             x-text="cart.item_count || 0"
           ></span>
         </button>
+
+        {% # Hamburger Menu Button - Right Position %}
+        {% if section.settings.hamburger_position == 'right' %}
+          <button
+            type="button"
+            data-menu-trigger
+            aria-label="Menu"
+            class="{% unless section.settings.enable_hamburger_all_devices %}md:hidden{% endunless %} transition hover:opacity-80 w-6 h-6 flex items-center justify-center"
+          >
+            <span class="w-6 h-6 [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current">
+              {{ 'icon-menu.svg' | inline_asset_content }}
+            </span>
+          </button>
+        {% endif %}
       </div>
     </div>
   </div>
 </header>
+
+{% # Render Mobile Menu %}
+{% render 'mobile-menu', section: section %}
 
 {% schema %}
 {
@@ -112,6 +150,41 @@
       "type": "link_list",
       "id": "menu",
       "label": "Main menu"
+    },
+    {
+      "type": "header",
+      "content": "Mobile Menu Settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_hamburger_all_devices",
+      "label": "Use hamburger menu on all devices",
+      "default": false,
+      "info": "Hide desktop navigation and show hamburger menu on all screen sizes"
+    },
+    {
+      "type": "select",
+      "id": "hamburger_position",
+      "label": "Hamburger button position",
+      "default": "left",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right (with icons)" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "mobile_menu_slide_direction",
+      "label": "Menu slide direction",
+      "default": "from-left",
+      "options": [
+        { "value": "from-left", "label": "Slide from left" },
+        { "value": "from-right", "label": "Slide from right" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Logo Settings"
     },
     {
       "type": "select",
@@ -141,6 +214,10 @@
       "min": 40,
       "max": 400,
       "step": 10
+    },
+    {
+      "type": "header",
+      "content": "Style Settings"
     },
     {
       "type": "color_scheme",

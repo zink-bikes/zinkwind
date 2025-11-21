@@ -6,13 +6,34 @@
 {% endcomment %}
 
 <section class="page-width">
-  <h1>{{ collection.title }}</h1>
+  <div class="py-10 border-b border-gray-200 mb-6 text-center">
+    {% if collection.image %}
+      <div class="collection-header__image mb-4">
+        {% render 'image',
+          class: 'w-full h-auto',
+          image: collection.image,
+          url: collection.url,
+          width: 1200,
+          height: 400,
+          crop: 'center'
+        %}
+      </div>
+    {% endif %}
+
+    {% if collection.description != blank %}
+      <div class="collection-header__description text-gray-700 mb-4">
+        {{ collection.description | markdownify }}
+      </div>
+    {% endif %}
+    <h1 class="my-10 uppercase">{{ collection.title }}</h1>
+  </div>
 
   <div class="collection-products grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-8">
     {% paginate collection.products by 20 %}
       {% for product in collection.products %}
         <div class="collection-product">
           {% if product.featured_image %}
+            <div class="aspect-square bg-gray-200 flex items-center overflow-hidden justify-center mb-2 outline-1 outline-offset-4">
             {% render 'image',
               class: 'collection-product__image',
               image: product.featured_image,
@@ -21,10 +42,25 @@
               height: 400,
               crop: 'center'
             %}
+          </div>
           {% endif %}
-          <div class="collection-product__content">
-            <p>{{ product.title | escape | link_to: product.url }}</p>
-            <p>{{ product.price | money }}</p>
+          <div class="collection-product__content grid gap-2 text-center">
+            <p class="h5 uppercase">
+              {{ product.title | escape | link_to: product.url }}
+            </p>
+
+            {% if product.compare_at_price > product.price %}
+              <div class="flex items-center justify-center gap-2">
+                <p class="line-through opacity-60 text-sm">
+                  {{ product.compare_at_price | money }}
+                </p>
+                <p class="font-bold">
+                  {{ product.price | money }}
+                </p>
+            </div>
+            {% else %}
+              <p>{{ product.price | money }}</p>
+            {% endif %}
           </div>
         </div>
       {% endfor %}

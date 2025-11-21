@@ -1,41 +1,28 @@
-<footer class="page-width">
-  <div class="footer__copyright">
-    &copy;
-    {{ 'now' | date: '%Y' }}
-    {{ shop.name | link_to: routes.root_url }}, {{ powered_by_link }}
+<footer class="page-width grid gap-4 mt-10 py-6">
+  <div class="flex justify-between">
+
+    <div class="footer__links flex items-center gap-4">
+      {% for link in section.settings.menu.links %}
+        {{ link.title | link_to: link.url }}
+      {% endfor %}
+    </div>
   </div>
 
-  <div class="footer__links">
-    {% for link in section.settings.menu.links %}
-      {{ link.title | link_to: link.url }}
-    {% endfor %}
-  </div>
-
-  <div class="footer__payment">
+  <div class="footer__payment flex items-center gap-1">
     {% if section.settings.show_payment_icons %}
       {% for type in shop.enabled_payment_types %}
         {{ type | payment_type_svg_tag }}
       {% endfor %}
     {% endif %}
   </div>
-</footer>
 
-{% stylesheet %}
-  footer {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 2rem;
-  }
-  footer a {
-    text-decoration: none;
-    color: var(--color-foreground);
-  }
-  footer .footer__links,
-  footer .footer__payment {
-    display: flex;
-    gap: 1rem;
-  }
-{% endstylesheet %}
+
+    <div class="footer__copyright text-sm italic">
+      &copy;
+      {{ 'now' | date: '%Y' }}
+      {{ shop.name | link_to: routes.root_url }}, {{ powered_by_link }}
+    </div>
+</footer>
 
 {% schema %}
 {

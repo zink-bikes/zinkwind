@@ -1,20 +1,21 @@
 {% comment %}
-  Product section with blocks (Tailwind-only)
+  Product section with blocks (TailwindUI styling)
   ---------------------------------------------------------
-  Static gallery on the left, modular content blocks on the right.
+  Tab-based gallery on the left, modular content blocks on the right.
   The Add to Cart block wraps its own form, and other inputs link to it via the `form` attribute.
 {% endcomment %}
 
-<section class="color-scheme color-scheme--{{ section.settings.color_scheme }}">
-  <div class="flex flex-row flex-wrap gap-10 md:flex-nowrap page-width p-default">
-    <!-- Static Product Gallery -->
-    <div class="w-full md:w-2/3">
-      {% render 'product-gallery', product: product %}
-    </div>
+<section class="bg-white color-scheme color-scheme--{{ section.settings.color_scheme }}">
+  <div class="mx-auto max-w-2xl px-4 sm:px-6 sm:pt-16 lg:max-w-7xl lg:px-8">
+    <div class="lg:grid lg:grid-cols-2 lg:gap-x-8 lg:items-start">
+      <!-- Product Gallery -->
+      <div class="w-full">
+        {% render 'product-gallery', product: product, section_id: section.id %}
+      </div>
 
-    <!-- Product Info (Blocks) -->
-    <div class="flex flex-col w-full gap-3 md:w-1/3">
-      {% assign current_variant = product.selected_or_first_available_variant %}
+      <!-- Product Info (Blocks) -->
+      <div class="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
+        {% assign current_variant = product.selected_or_first_available_variant %}
 
       {% for block in section.blocks %}
         <div {{ block.shopify_attributes }}>
@@ -22,56 +23,61 @@
 
             {% when 'title' %}
               {% if product.title != blank %}
-                <h1 class="h2">{{ product.title }}</h1>
+                <h1 class="text-3xl font-bold tracking-tight text-gray-900">{{ product.title }}</h1>
               {% endif %}
 
             {% when 'price' %}
               {% if product.price != blank %}
-                <div data-product-form="{{ section.id }}">
-                  <span class="text-base font-medium">
+                <div class="mt-3" data-product-form="{{ section.id }}">
+                  <h2 class="sr-only">Product information</h2>
+                  <p class="text-3xl tracking-tight text-gray-900">
                     <span data-product-price>{{ current_variant.price | money }}</span>
-                    {% if current_variant.compare_at_price > current_variant.price %}
-                      <span class="ml-2 text-sm text-(--color-accent) line-through" data-compare-price>
-                        {{ current_variant.compare_at_price | money }}
-                      </span>
-                    {% else %}
-                      <span class="ml-2 text-sm text-(--color-accent) line-through hidden" data-compare-price></span>
-                    {% endif %}
-                  </span>
+                  </p>
+                  {% if current_variant.compare_at_price > current_variant.price %}
+                    <p class="mt-1 text-base text-gray-500 line-through" data-compare-price>
+                      {{ current_variant.compare_at_price | money }}
+                    </p>
+                  {% else %}
+                    <p class="mt-1 text-base text-gray-500 line-through hidden" data-compare-price></p>
+                  {% endif %}
                 </div>
               {% endif %}
 
             {% when 'description' %}
               {% if product.description != blank %}
-                {% if block.settings.read_more %}
-                  {% render 'read-more', content: product.description, classes: '' %}
-                {% else %}
-                  <div>{{ product.description }}</div>
-                {% endif %}
+                <div class="mt-6">
+                  <h3 class="sr-only">Description</h3>
+                  {% if block.settings.read_more %}
+                    {% render 'read-more', content: product.description, classes: 'text-base text-gray-700' %}
+                  {% else %}
+                    <div class="text-base text-gray-700 space-y-6">{{ product.description }}</div>
+                  {% endif %}
+                </div>
               {% endif %}
 
             {% when 'vendor' %}
               {% if product.vendor != blank %}
-                <span class="text-sm text-(--color-accent)">{{ product.vendor }}</span>
+                <p class="text-sm text-gray-500">Brand: <span class="font-medium text-gray-900">{{ product.vendor }}</span></p>
               {% endif %}
 
             {% when 'divider' %}
-              <hr class="border-t border-(--color-accent)">
+              <hr class="my-6 border-t border-gray-200">
 
             {% when 'variant_selector' %}
               {% render 'variant-selector', product: product, section_id: section.id %}
 
             {% when 'add_to_cart' %}
               {% form 'product', product, id: 'ProductForm-{{ section.id }}', data-cart-form: true, data-product-form: section.id %}
-                <div class="flex flex-col gap-2">
-                  <input
+                <div class="mt-10 flex flex-col gap-3">
+                  <button
                     type="submit"
-                    value="Add to cart"
-                    class="button-primary"
+                    class="flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     data-cart-submit
                     data-text-available="Add to cart"
                     data-text-sold-out="Sold out"
                   >
+                    Add to cart
+                  </button>
                   <input
                     type="hidden"
                     name="id"
@@ -86,17 +92,17 @@
               {% endform %}
 
             {% when 'quantity' %}
-              <div class="flex flex-col gap-1">
+              <div class="mt-6">
                 <label
                   for="Quantity-{{ section.id }}"
-                  class="underline"
+                  class="block text-sm font-medium text-gray-700 mb-2"
                 >
                   Quantity
                 </label>
-                <div class="flex items-center justify-between border">
+                <div class="flex items-center border border-gray-300 rounded-md w-32">
                   <button
                     type="button"
-                    class="px-3 py-2 button-secondary"
+                    class="px-3 py-2 text-gray-600 hover:text-gray-900 focus:outline-none"
                     onclick="this.nextElementSibling.stepDown()"
                   >
                     −
@@ -108,11 +114,11 @@
                     id="Quantity-{{ section.id }}"
                     min="1"
                     value="1"
-                    class="text-center"
+                    class="w-full text-center border-0 focus:ring-0 text-gray-900"
                   >
                   <button
                     type="button"
-                    class="px-3 py-2 button-secondary"
+                    class="px-3 py-2 text-gray-600 hover:text-gray-900 focus:outline-none"
                     onclick="this.previousElementSibling.stepUp()"
                   >
                     +
@@ -130,6 +136,7 @@
       {% endfor %}
     </div>
   </div>
+</div>
 </section>
 
 

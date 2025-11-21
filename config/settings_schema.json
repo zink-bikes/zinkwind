@@ -289,13 +289,24 @@
     ]
   },
   {
+    "name": "Cart",
+    "settings": [
+      {
+        "type": "color_scheme",
+        "id": "color_theme_cart",
+        "label": "Color scheme for cart",
+        "default": "scheme-2"
+      },
+    ]
+  },
+  {
     "name": "Colors",
     "settings": [
       {
         "type": "color_scheme",
         "id": "color_theme_scheme",
         "label": "Default theme color scheme",
-        "default": "scheme-1"
+        "default": "scheme-2"
       },
       {
         "type": "range",

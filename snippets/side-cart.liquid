@@ -19,7 +19,7 @@
     role="dialog"
     aria-modal="true"
     aria-labelledby="cart-title"
-    class="fixed top-0 right-0 h-full w-full max-w-md bg-black shadow-xl overflow-y-auto"
+    class="fixed top-0 right-0 h-full w-full max-w-md shadow-xl overflow-y-auto color-scheme color-scheme--{{ settings.color_theme_cart }}"
     x-data="{
       get cartManager() {
         return window.cartManager ? window.cartManager.getMethods() : null;
@@ -38,8 +38,7 @@
         <h2 id="cart-title" class="text-lg font-semibold">Cart</h2>
         <button
           type="button"
-          x-on:click="cartManager?.closeCart()"
-          data-a11y-dialog-hide
+          data-a11y-dialog-hide="side-cart"
           aria-label="Close cart"
           class="p-2 hover:opacity-70 transition"
         >
@@ -199,6 +198,7 @@
         <button
           type="button"
           data-a11y-dialog-hide
+          x-on:click="cartManager?.closeCart()"
           class="block w-full text-center button-secondary py-3"
         >
           Continue Shopping

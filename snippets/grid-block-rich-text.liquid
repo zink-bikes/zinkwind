@@ -1,0 +1,119 @@
+{% # Grid Block - Rich Text %}
+
+{% liquid
+  assign block_id = 'grid-block-' | append: block.id
+
+  # Determine if card should be clickable
+  assign has_card_link = false
+  if block.settings.card_link != blank
+    assign has_card_link = true
+  endif
+
+  # Build classes
+  assign card_classes = 'grid-block-rich-text h-full flex flex-col '
+  assign card_classes = card_classes | append: block.settings.padding | append: ' '
+  assign card_classes = card_classes | append: block.settings.border_radius | append: ' '
+  assign card_classes = card_classes | append: 'color-scheme color-scheme--' | append: block.settings.color_scheme
+
+  if block.settings.show_border
+    assign card_classes = card_classes | append: ' border border-current border-opacity-20'
+  endif
+
+  if has_card_link
+    assign card_classes = card_classes | append: ' transition-shadow hover:shadow-lg cursor-pointer'
+  endif
+%}
+
+{% # Wrapper with optional link %}
+{% if has_card_link %}
+  <a href="{{ block.settings.card_link }}" class="{{ card_classes }}" {{ block.shopify_attributes }}>
+{% else %}
+  <div class="{{ card_classes }}" {{ block.shopify_attributes }}>
+{% endif %}
+
+  {% if block.settings.content != blank %}
+    <div class="rich-text-content">
+      {{ block.settings.content }}
+    </div>
+  {% else %}
+    <div class="text-gray-400 italic">
+      <p>Add your rich text content here.</p>
+    </div>
+  {% endif %}
+
+{% if has_card_link %}
+  </a>
+{% else %}
+  </div>
+{% endif %}
+
+{% style %}
+  .grid-block-rich-text .rich-text-content {
+    /* Typography styles for rich text content */
+  }
+
+  .grid-block-rich-text .rich-text-content h1,
+  .grid-block-rich-text .rich-text-content h2,
+  .grid-block-rich-text .rich-text-content h3,
+  .grid-block-rich-text .rich-text-content h4,
+  .grid-block-rich-text .rich-text-content h5,
+  .grid-block-rich-text .rich-text-content h6 {
+    font-weight: 700;
+    margin-bottom: 0.5em;
+  }
+
+  .grid-block-rich-text .rich-text-content h1 { font-size: 2em; }
+  .grid-block-rich-text .rich-text-content h2 { font-size: 1.5em; }
+  .grid-block-rich-text .rich-text-content h3 { font-size: 1.25em; }
+  .grid-block-rich-text .rich-text-content h4 { font-size: 1.1em; }
+
+  .grid-block-rich-text .rich-text-content p {
+    margin-bottom: 1em;
+  }
+
+  .grid-block-rich-text .rich-text-content p:last-child {
+    margin-bottom: 0;
+  }
+
+  .grid-block-rich-text .rich-text-content ul,
+  .grid-block-rich-text .rich-text-content ol {
+    margin-bottom: 1em;
+    padding-left: 1.5em;
+  }
+
+  .grid-block-rich-text .rich-text-content ul {
+    list-style-type: disc;
+  }
+
+  .grid-block-rich-text .rich-text-content ol {
+    list-style-type: decimal;
+  }
+
+  .grid-block-rich-text .rich-text-content li {
+    margin-bottom: 0.25em;
+  }
+
+  .grid-block-rich-text .rich-text-content strong {
+    font-weight: 700;
+  }
+
+  .grid-block-rich-text .rich-text-content em {
+    font-style: italic;
+  }
+
+  .grid-block-rich-text .rich-text-content a {
+    text-decoration: underline;
+    transition: opacity 0.2s;
+  }
+
+  .grid-block-rich-text .rich-text-content a:hover {
+    opacity: 0.7;
+  }
+
+  .grid-block-rich-text .rich-text-content blockquote {
+    border-left: 4px solid currentColor;
+    padding-left: 1em;
+    margin: 1em 0;
+    opacity: 0.8;
+  }
+{% endstyle %}

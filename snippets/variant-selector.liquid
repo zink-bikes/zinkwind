@@ -35,7 +35,7 @@
               "price": {{ variant.price | json }},
               "compare_at_price": {{ variant.compare_at_price | json }},
               "available": {{ variant.available | json }},
-              "featured_image": {% if variant.featured_image %}{{ variant.featured_image | json }}{% else %}null{% endif %}
+              "featured_image": {% if variant.featured_image %}{{ variant.featured_image. }}{% else %}null{% endif %}
             }{% unless forloop.last %},{% endunless %}
           {% endfor %}
         ],
@@ -55,15 +55,17 @@
       {% assign option_name = option.name | downcase %}
       {% assign option_index = forloop.index0 %}
 
-      <div class="variant-option-group mb-4">
-        <label class="block mb-2 font-medium underline">
-          {{ option.name }}
-        </label>
+      <div class="variant-option-group mt-8">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-medium text-gray-900">{{ option.name }}</h3>
+        </div>
 
         {% comment %} Check if this is a color option {% endcomment %}
         {% if option_name == 'color' or option_name == 'colour' %}
           {% comment %} Color Swatches {% endcomment %}
-          <div class="flex flex-wrap gap-2" role="group" aria-label="{{ option.name }} options">
+          <div class="mt-4">
+            <span class="sr-only">Choose a color</span>
+            <div class="flex items-center gap-2" role="group" aria-label="{{ option.name }} options">
             {% for value in option.values %}
               {% comment %} Find variant with this color to get metafield {% endcomment %}
               {% assign color_variant = null %}
@@ -97,7 +99,7 @@
 
               <button
                 type="button"
-                class="variant-option variant-option--color relative w-12 h-12 border-2 border-gray-300 rounded-full overflow-hidden transition-all hover:scale-110 hover:border-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900"
+                class="variant-option variant-option--color relative -m-0.5 flex cursor-pointer items-center justify-center rounded-full p-0.5 focus:outline-none ring-gray-400 aria-pressed:ring-2"
                 data-variant-option="{{ section_id }}"
                 data-option-type="color"
                 data-option-name="{{ option.name }}"
@@ -106,25 +108,28 @@
                 aria-pressed="{% if option.selected_value == value %}true{% else %}false{% endif %}"
                 title="{{ value }}"
               >
+                <span class="sr-only">{{ value }}</span>
                 {% comment %} Render color swatch {% endcomment %}
                 {% if has_swatch and value.swatch.image %}
                   {% comment %} Image swatch {% endcomment %}
-                  <img
-                    src="{{ value.swatch.image | image_url: width: 50 }}"
-                    alt="{{ value }}"
-                    class="w-full h-full object-cover"
-                    loading="lazy"
-                  >
+                  <span class="h-8 w-8 rounded-full border border-black border-opacity-10 overflow-hidden">
+                    <img
+                      src="{{ value.swatch.image | image_url: width: 50 }}"
+                      alt="{{ value }}"
+                      class="h-full w-full object-cover object-center"
+                      loading="lazy"
+                    >
+                  </span>
                 {% elsif has_swatch and value.swatch.color %}
                   {% comment %} Shopify swatch object with color {% endcomment %}
                   <span
-                    class="block w-full h-full"
+                    class="h-8 w-8 rounded-full border border-black border-opacity-10"
                     style="background-color: {{ value.swatch.color }};"
                   ></span>
                 {% elsif color_value %}
                   {% comment %} Metafield color value {% endcomment %}
                   <span
-                    class="block w-full h-full"
+                    class="h-8 w-8 rounded-full border border-black border-opacity-10"
                     style="background-color: {{ color_value }};"
                   ></span>
                 {% else %}
@@ -132,99 +137,105 @@
                   {% assign color_map = value | downcase %}
                   {% case color_map %}
                     {% when 'black' %}
-                      <span class="block w-full h-full bg-black"></span>
+                      <span class="h-8 w-8 rounded-full border border-black border-opacity-10 bg-gray-900"></span>
                     {% when 'white' %}
-                      <span class="block w-full h-full bg-white border border-gray-300"></span>
+                      <span class="h-8 w-8 rounded-full border border-gray-300 bg-white"></span>
                     {% when 'red' %}
-                      <span class="block w-full h-full bg-red-600"></span>
+                      <span class="h-8 w-8 rounded-full border border-black border-opacity-10 bg-red-600"></span>
                     {% when 'blue' %}
-                      <span class="block w-full h-full bg-blue-600"></span>
+                      <span class="h-8 w-8 rounded-full border border-black border-opacity-10 bg-blue-600"></span>
                     {% when 'green' %}
-                      <span class="block w-full h-full bg-green-600"></span>
+                      <span class="h-8 w-8 rounded-full border border-black border-opacity-10 bg-green-600"></span>
                     {% when 'yellow' %}
-                      <span class="block w-full h-full bg-yellow-400"></span>
+                      <span class="h-8 w-8 rounded-full border border-black border-opacity-10 bg-yellow-400"></span>
                     {% when 'pink' %}
-                      <span class="block w-full h-full bg-pink-500"></span>
+                      <span class="h-8 w-8 rounded-full border border-black border-opacity-10 bg-pink-500"></span>
                     {% when 'purple' %}
-                      <span class="block w-full h-full bg-purple-600"></span>
+                      <span class="h-8 w-8 rounded-full border border-black border-opacity-10 bg-purple-600"></span>
                     {% when 'gray' or 'grey' %}
-                      <span class="block w-full h-full bg-gray-500"></span>
+                      <span class="h-8 w-8 rounded-full border border-black border-opacity-10 bg-gray-500"></span>
                     {% when 'navy' %}
-                      <span class="block w-full h-full bg-blue-900"></span>
+                      <span class="h-8 w-8 rounded-full border border-black border-opacity-10 bg-blue-900"></span>
                     {% when 'brown' %}
-                      <span class="block w-full h-full bg-amber-800"></span>
+                      <span class="h-8 w-8 rounded-full border border-black border-opacity-10 bg-amber-800"></span>
                     {% when 'beige' %}
-                      <span class="block w-full h-full bg-amber-100"></span>
+                      <span class="h-8 w-8 rounded-full border border-black border-opacity-10 bg-amber-100"></span>
                     {% when 'orange' %}
-                      <span class="block w-full h-full bg-orange-500"></span>
+                      <span class="h-8 w-8 rounded-full border border-black border-opacity-10 bg-orange-500"></span>
                     {% else %}
                       {% comment %} Ultimate fallback: show color name as text {% endcomment %}
-                      <span class="block w-full h-full flex items-center justify-center text-xs bg-gray-200">
+                      <span class="h-8 w-8 rounded-full border border-black border-opacity-10 bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-700">
                         {{ value | slice: 0, 2 | upcase }}
                       </span>
                   {% endcase %}
                 {% endif %}
-
-                {% comment %} Selected indicator {% endcomment %}
-                <span class="absolute inset-0 border-2 border-transparent rounded-full variant-option__selected-ring pointer-events-none"></span>
               </button>
             {% endfor %}
+            </div>
           </div>
 
         {% elsif option_name == 'size' %}
           {% comment %} Size Buttons {% endcomment %}
-          <div class="flex flex-wrap gap-2" role="group" aria-label="{{ option.name }} options">
+          <div class="mt-4">
+            <span class="sr-only">Choose a size</span>
+            <div class="grid grid-cols-4 gap-4 sm:grid-cols-8 lg:grid-cols-4" role="group" aria-label="{{ option.name }} options">
             {% for value in option.values %}
               <button
                 type="button"
-                class="variant-option variant-option--size px-4 py-2 border border-gray-300 rounded hover:border-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900"
+                class="variant-option variant-option--size group relative flex items-center justify-center rounded-md border py-3 px-4 text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none sm:flex-1 sm:py-6 border-gray-300 bg-white text-gray-900 shadow-sm cursor-pointer aria-pressed:border-transparent aria-pressed:bg-indigo-600 aria-pressed:text-white hover:aria-pressed:bg-indigo-700"
                 data-variant-option="{{ section_id }}"
                 data-option-type="button"
                 data-option-name="{{ option.name }}"
                 data-option-value="{{ value }}"
                 aria-pressed="{% if option.selected_value == value %}true{% else %}false{% endif %}"
               >
-                {{ value }}
+                <span>{{ value }}</span>
+                <span class="pointer-events-none absolute -inset-px rounded-md aria-pressed:border-2 aria-pressed:border-indigo-600" aria-hidden="true"></span>
               </button>
             {% endfor %}
+            </div>
           </div>
 
         {% else %}
           {% comment %} Other options: Buttons or Select Dropdown {% endcomment %}
           {% if option.values.size <= 5 %}
             {% comment %} Use buttons for 5 or fewer options {% endcomment %}
-            <div class="flex flex-wrap gap-2" role="group" aria-label="{{ option.name }} options">
-              {% for value in option.values %}
-                <button
-                  type="button"
-                  class="variant-option variant-option--button px-4 py-2 border border-gray-300 rounded hover:border-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900"
-                  data-variant-option="{{ section_id }}"
-                  data-option-type="button"
-                  data-option-name="{{ option.name }}"
-                  data-option-value="{{ value }}"
-                  aria-pressed="{% if option.selected_value == value %}true{% else %}false{% endif %}"
-                >
-                  {{ value }}
-                </button>
-              {% endfor %}
+            <div class="mt-4">
+              <div class="flex flex-wrap gap-3" role="group" aria-label="{{ option.name }} options">
+                {% for value in option.values %}
+                  <button
+                    type="button"
+                    class="variant-option variant-option--button px-6 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-900 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 aria-pressed:border-indigo-600 aria-pressed:bg-indigo-50"
+                    data-variant-option="{{ section_id }}"
+                    data-option-type="button"
+                    data-option-name="{{ option.name }}"
+                    data-option-value="{{ value }}"
+                    aria-pressed="{% if option.selected_value == value %}true{% else %}false{% endif %}"
+                  >
+                    {{ value }}
+                  </button>
+                {% endfor %}
+              </div>
             </div>
           {% else %}
             {% comment %} Use select dropdown for more than 5 options {% endcomment %}
-            <select
-              class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-900"
-              data-variant-option="{{ section_id }}"
-              data-option-type="select"
-              data-option-name="{{ option.name }}"
-            >
-              {% for value in option.values %}
-                <option
-                  value="{{ value }}"
-                  {% if option.selected_value == value %}selected{% endif %}
-                >
-                  {{ value }}
-                </option>
-              {% endfor %}
-            </select>
+            <div class="mt-4">
+              <select
+                class="mt-1 block w-full rounded-md border-gray-300 py-3 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                data-variant-option="{{ section_id }}"
+                data-option-type="select"
+                data-option-name="{{ option.name }}"
+              >
+                {% for value in option.values %}
+                  <option
+                    value="{{ value }}"
+                    {% if option.selected_value == value %}selected{% endif %}
+                  >
+                    {{ value }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
           {% endif %}
         {% endif %}
       </div>

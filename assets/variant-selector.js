@@ -103,7 +103,7 @@ export class VariantSelector {
 
     // Update UI
     this.updateButtonStates(optionName);
-    this.updateVariant();
+    this.updateVariant(optionName);
   }
 
   /**
@@ -118,7 +118,7 @@ export class VariantSelector {
     this.selectedOptions[optionName] = optionValue;
 
     // Update variant
-    this.updateVariant();
+    this.updateVariant(optionName);
   }
 
   /**
@@ -157,21 +157,44 @@ export class VariantSelector {
 
   /**
    * Update variant based on selected options
+   * @param {string} changedOptionName - The name of the option that was changed (optional)
    */
-  updateVariant() {
+  updateVariant(changedOptionName = null) {
     const matchingVariant = this.findMatchingVariant();
 
     if (matchingVariant) {
       this.updateVariantId(matchingVariant.id);
       this.updatePrice(matchingVariant);
-      this.updateImage(matchingVariant);
+
+      // Only update gallery image if a color/colour option changed
+      const isColorChange = changedOptionName &&
+        (changedOptionName.toLowerCase() === 'color' || changedOptionName.toLowerCase() === 'colour');
+
+      if (isColorChange) {
+        this.updateImage(matchingVariant);
+      }
+
       this.updateAvailability(matchingVariant);
+
+      // Update URL with variant ID for sharing/bookmarking
+      this.updateURL(matchingVariant);
 
       // Emit custom event for other components
       this.emitVariantChange(matchingVariant);
     } else {
       console.warn('No matching variant found for:', this.selectedOptions);
     }
+  }
+
+  /**
+   * Update browser URL with selected variant
+   */
+  updateURL(variant) {
+    if (!window.history.replaceState) return;
+
+    const url = new URL(window.location.href);
+    url.searchParams.set('variant', variant.id);
+    window.history.replaceState({}, '', url.toString());
   }
 
   /**
@@ -202,16 +225,57 @@ export class VariantSelector {
   }
 
   /**
-   * Update product image
+   * Update product image and gallery
    */
   updateImage(variant) {
-    if (variant.featured_image && this.productImages.length > 0) {
+    // Only update images if variant has a featured image
+    if (!variant.featured_image) {
+      return;
+    }
+
+    // Update main product images if they exist
+    if (this.productImages.length > 0) {
       this.productImages.forEach(img => {
         // Update image src
-        if (img.tagName === 'IMG') {
+        if (img.tagName === 'IMG' && variant.featured_image.src) {
           img.src = variant.featured_image.src;
-          img.alt = variant.featured_image.alt || variant.name;
+          img.alt = variant.featured_image.alt || variant.title || '';
         }
+      });
+    }
+
+    // Switch gallery tab to the variant image if gallery exists
+    this.switchGalleryImage(variant.featured_media);
+  }
+
+  /**
+   * Switch gallery to show the variant's featured media
+   */
+  switchGalleryImage(featuredMedia) {
+    if (!featuredMedia || !featuredMedia.position) return;
+
+    // Find the gallery container
+    const gallery = document.querySelector(`[data-product-gallery="${this.sectionId}"]`);
+    if (!gallery) return;
+
+    // Get all gallery tabs and panels
+    const tabs = gallery.querySelectorAll('[data-gallery-tab]');
+    const panels = gallery.querySelectorAll('[data-gallery-panel]');
+
+    // Use position to find the matching tab (position is 1-indexed, array is 0-indexed)
+    const matchingTabIndex = featuredMedia.position - 1;
+
+    // If we found a matching tab, activate it
+    if (matchingTabIndex >= 0 && matchingTabIndex < tabs.length) {
+      // Update tabs
+      tabs.forEach((t, i) => {
+        t.setAttribute('aria-selected', i === matchingTabIndex ? 'true' : 'false');
+      });
+
+      // Update panels
+      panels.forEach((p, i) => {
+        p.setAttribute('aria-hidden', i === matchingTabIndex ? 'false' : 'true');
+        p.hidden = i !== matchingTabIndex;
       });
     }
   }

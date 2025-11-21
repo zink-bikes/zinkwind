@@ -1,0 +1,130 @@
+{% # Mobile Menu Drawer %}
+
+{% liquid
+  assign menu = section.settings.menu
+  assign slide_direction = section.settings.mobile_menu_slide_direction | default: 'from-left'
+
+  # Determine panel position class
+  if slide_direction == 'from-right'
+    assign position_class = 'right-0'
+  else
+    assign position_class = 'left-0'
+  endif
+%}
+
+<div data-a11y-dialog="mobile-menu" class="fixed inset-0 z-50" aria-hidden="true">
+  {% # Overlay %}
+  <div data-a11y-dialog-overlay class="fixed inset-0 bg-black/50" data-a11y-dialog-hide></div>
+
+  {% # Sliding Container %}
+  <div
+    data-a11y-dialog-container
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="menu-title"
+    class="mobile-menu-container fixed top-0 {{ position_class }} h-full w-full shadow-xl overflow-y-auto color-scheme color-scheme--{{ section.settings.color_scheme }}"
+    data-slide-direction="{{ slide_direction }}"
+  >
+
+    {% # Header %}
+    <div class="flex items-center justify-between p-4 border-b border-current border-opacity-20">
+      <h2 id="menu-title" class="text-lg font-semibold">Menu</h2>
+      <button
+        type="button"
+        data-a11y-dialog-hide="mobile-menu"
+        aria-label="Close menu"
+        class="p-2 hover:opacity-70 transition"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    {% # Navigation Content %}
+    {% if menu != blank %}
+      <nav class="p-4" aria-label="Main navigation">
+        <ul class="flex flex-col gap-2">
+          {% for link in menu.links %}
+            <li class="border-b border-current border-opacity-10 last:border-0">
+              {% if link.links != blank %}
+                {% # Parent item with children %}
+                <button
+                  type="button"
+                  data-menu-parent
+                  aria-expanded="false"
+                  class="w-full flex items-center justify-between py-3 px-2 text-left hover:opacity-70 transition"
+                  data-menu-link
+                >
+                  <span class="font-medium">{{ link.title }}</span>
+                  <svg
+                    data-menu-arrow
+                    class="w-5 h-5 transition-transform duration-300"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    style="transform: rotate(0deg);"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </button>
+
+                {% # Sub-menu %}
+                <ul
+                  class="sub-menu overflow-hidden transition-all duration-300"
+                  style="max-height: 0;"
+                >
+                  {% for child_link in link.links %}
+                    <li>
+                      <a
+                        href="{{ child_link.url }}"
+                        class="block py-2 px-6 hover:opacity-70 transition text-sm"
+                        data-menu-link
+                        {% if child_link.current %}aria-current="page"{% endif %}
+                      >
+                        {{ child_link.title }}
+                      </a>
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                {% # Regular link without children %}
+                <a
+                  href="{{ link.url }}"
+                  class="block py-3 px-2 hover:opacity-70 transition font-medium"
+                  data-menu-link
+                  {% if link.current %}aria-current="page"{% endif %}
+                >
+                  {{ link.title }}
+                </a>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </nav>
+    {% endif %}
+
+    {% # Account Link at Bottom %}
+    {% if shop.customer_accounts_enabled %}
+      <div class="mt-auto p-4 border-t border-current border-opacity-20">
+        <a
+          href="{{ routes.account_url }}"
+          class="flex items-center gap-3 py-3 px-2 hover:opacity-70 transition font-medium"
+          data-menu-link
+        >
+          <span class="w-6 h-6 [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current">
+            {{ 'icon-account.svg' | inline_asset_content }}
+          </span>
+          <span>
+            {% if customer %}
+              My Account
+            {% else %}
+              Sign In
+            {% endif %}
+          </span>
+        </a>
+      </div>
+    {% endif %}
+
+  </div>
+</div>

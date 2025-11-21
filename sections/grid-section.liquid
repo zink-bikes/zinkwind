@@ -1,0 +1,966 @@
+{% # Grid Section - Responsive grid with carousel functionality %}
+
+{% liquid
+  assign section_id = 'grid-section-' | append: section.id
+
+  # Spacing classes
+  assign spacing_classes = ''
+  assign spacing_classes = spacing_classes | append: section.settings.padding_top | append: ' '
+  assign spacing_classes = spacing_classes | append: section.settings.padding_bottom | append: ' '
+  assign spacing_classes = spacing_classes | append: section.settings.margin_top | append: ' '
+  assign spacing_classes = spacing_classes | append: section.settings.margin_bottom
+
+  # Column classes for grid mode
+  assign grid_cols_mobile = 'grid-cols-' | append: section.settings.columns_mobile
+  assign grid_cols_tablet = 'md:grid-cols-' | append: section.settings.columns_tablet
+  assign grid_cols_desktop = 'lg:grid-cols-' | append: section.settings.columns_desktop
+
+  assign grid_classes = grid_cols_mobile | append: ' ' | append: grid_cols_tablet | append: ' ' | append: grid_cols_desktop
+
+  # Check if carousel mode is enabled
+  assign has_carousel = false
+  if section.settings.carousel_mobile or section.settings.carousel_tablet
+    assign has_carousel = true
+  endif
+%}
+
+<section
+  id="{{ section_id }}"
+  class="color-scheme color-scheme--{{ section.settings.color_scheme }} {{ spacing_classes }} {% unless section.settings.full_width %}page-width{% endunless %}"
+>
+  <div class="{% if section.settings.full_width %}page-width{% endif %}">
+
+    {% # Section Headline and Body - Above Grid %}
+    {% if section.settings.content_position == 'above' %}
+      {% if section.settings.headline != blank or section.settings.body != blank %}
+        <div class="grid-section-content mb-8 {{ section.settings.content_alignment }} {% unless section.settings.content_full_width %}max-w-3xl{% if section.settings.content_alignment == 'text-center' %} mx-auto{% endif %}{% endunless %}">
+          {% if section.settings.headline != blank %}
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">{{ section.settings.headline }}</h2>
+          {% endif %}
+          {% if section.settings.body != blank %}
+            <div class="text-base md:text-lg opacity-90">{{ section.settings.body }}</div>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endif %}
+
+    {% # Grid/Carousel Container %}
+    {% if has_carousel %}
+      <grid-slider
+        class="relative"
+        data-carousel-mobile="{{ section.settings.carousel_mobile }}"
+        data-carousel-tablet="{{ section.settings.carousel_tablet }}"
+        data-slides-mobile="{{ section.settings.slides_per_view_mobile }}"
+        data-slides-tablet="{{ section.settings.slides_per_view_tablet }}"
+        data-slides-desktop="{{ section.settings.slides_per_view_desktop }}"
+        data-start-slide="{{ section.settings.start_slide }}"
+        data-show-arrows="{{ section.settings.show_arrows }}"
+        data-show-pagination="{{ section.settings.show_pagination }}"
+        data-autoplay="{{ section.settings.enable_autoplay }}"
+        data-autoplay-delay="{{ section.settings.autoplay_delay }}"
+        data-gap="{{ section.settings.grid_gap }}"
+      >
+        <div class="grid-slider-track grid {{ grid_classes }} {{ section.settings.grid_gap }}">
+    {% else %}
+      <div class="grid {{ grid_classes }} {{ section.settings.grid_gap }}">
+    {% endif %}
+
+          {% # Render Blocks %}
+          {% for block in section.blocks %}
+            {% case block.type %}
+
+              {% # Block Type 1: Image Overlay %}
+              {% when 'image_overlay' %}
+                {% render 'grid-block-image-overlay', block: block %}
+
+              {% # Block Type 2: Rich Text %}
+              {% when 'rich_text' %}
+                {% render 'grid-block-rich-text', block: block %}
+
+              {% # Block Type 3: Review %}
+              {% when 'review' %}
+                {% render 'grid-block-review', block: block %}
+
+            {% endcase %}
+          {% endfor %}
+
+    {% if has_carousel %}
+        </div>
+
+        {% # Navigation Arrows %}
+        {% if section.settings.show_arrows %}
+          <div class="flex justify-between items-center mt-6 gap-4">
+            <button
+              class="grid-slider-prev button-secondary flex items-center justify-center w-12 h-12 rounded-full transition-all"
+              aria-label="Previous slide"
+              style="display: none;"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+            </button>
+
+            <button
+              class="grid-slider-next button-secondary flex items-center justify-center w-12 h-12 rounded-full transition-all"
+              aria-label="Next slide"
+              style="display: none;"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        {% endif %}
+
+        {% # Pagination Dots %}
+        {% if section.settings.show_pagination %}
+          <div class="grid-slider-pagination flex justify-center items-center gap-2 mt-6" style="display: none;">
+            {% # Dots will be generated by JavaScript %}
+          </div>
+        {% endif %}
+
+      </grid-slider>
+    {% else %}
+      </div>
+    {% endif %}
+
+    {% # Section Headline and Body - Below Grid %}
+    {% if section.settings.content_position == 'below' %}
+      {% if section.settings.headline != blank or section.settings.body != blank %}
+        <div class="grid-section-content mt-8 {{ section.settings.content_alignment }} {% unless section.settings.content_full_width %}max-w-3xl{% if section.settings.content_alignment == 'text-center' %} mx-auto{% endif %}{% endunless %}">
+          {% if section.settings.headline != blank %}
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">{{ section.settings.headline }}</h2>
+          {% endif %}
+          {% if section.settings.body != blank %}
+            <div class="text-base md:text-lg opacity-90">{{ section.settings.body }}</div>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endif %}
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Grid Section",
+  "tag": "section",
+  "class": "grid-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content Settings"
+    },
+    {
+      "type": "text",
+      "id": "headline",
+      "label": "Headline",
+      "default": "Featured Content"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body text",
+      "default": "Showcase your products, content, or reviews in a beautiful grid layout."
+    },
+    {
+      "type": "select",
+      "id": "content_position",
+      "label": "Content position",
+      "default": "above",
+      "options": [
+        {
+          "value": "above",
+          "label": "Above grid"
+        },
+        {
+          "value": "below",
+          "label": "Below grid"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "label": "Content alignment",
+      "default": "text-center",
+      "options": [
+        {
+          "value": "text-left",
+          "label": "Left"
+        },
+        {
+          "value": "text-center",
+          "label": "Center"
+        },
+        {
+          "value": "text-right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "content_full_width",
+      "label": "Full width content",
+      "default": false,
+      "info": "Allow headline and body text to span full width"
+    },
+    {
+      "type": "header",
+      "content": "Layout Settings"
+    },
+    {
+      "type": "range",
+      "id": "columns_mobile",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 1,
+      "label": "Columns (Mobile)"
+    },
+    {
+      "type": "range",
+      "id": "columns_tablet",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 2,
+      "label": "Columns (Tablet)"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 3,
+      "label": "Columns (Desktop)"
+    },
+    {
+      "type": "select",
+      "id": "grid_gap",
+      "label": "Grid gap",
+      "default": "gap-4",
+      "options": [
+        {
+          "value": "gap-0",
+          "label": "None"
+        },
+        {
+          "value": "gap-2",
+          "label": "Small"
+        },
+        {
+          "value": "gap-4",
+          "label": "Medium"
+        },
+        {
+          "value": "gap-6",
+          "label": "Large"
+        },
+        {
+          "value": "gap-8",
+          "label": "Extra Large"
+        },
+        {
+          "value": "gap-12",
+          "label": "Extra Extra Large"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Carousel Settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "carousel_mobile",
+      "label": "Enable carousel on mobile",
+      "default": true,
+      "info": "Convert grid to carousel on mobile devices (below 768px)"
+    },
+    {
+      "type": "checkbox",
+      "id": "carousel_tablet",
+      "label": "Enable carousel on tablet",
+      "default": false,
+      "info": "Convert grid to carousel on tablet devices (768px - 1024px)"
+    },
+    {
+      "type": "range",
+      "id": "slides_per_view_mobile",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 1,
+      "label": "Slides per view (Mobile)",
+      "info": "Only applies when carousel is enabled on mobile"
+    },
+    {
+      "type": "range",
+      "id": "slides_per_view_tablet",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 2,
+      "label": "Slides per view (Tablet)",
+      "info": "Only applies when carousel is enabled on tablet"
+    },
+    {
+      "type": "range",
+      "id": "slides_per_view_desktop",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 3,
+      "label": "Slides per view (Desktop)",
+      "info": "Used for calculating grid behavior"
+    },
+    {
+      "type": "range",
+      "id": "start_slide",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 1,
+      "label": "Starting slide",
+      "info": "Which slide to show first when carousel is active"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show navigation arrows",
+      "default": true,
+      "info": "Display previous/next arrows when carousel is active"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_pagination",
+      "label": "Show pagination dots",
+      "default": true,
+      "info": "Display dot indicators when carousel is active"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_autoplay",
+      "label": "Enable autoplay",
+      "default": false,
+      "info": "Automatically advance slides when carousel is active"
+    },
+    {
+      "type": "range",
+      "id": "autoplay_delay",
+      "min": 2000,
+      "max": 9000,
+      "step": 500,
+      "unit": "ms",
+      "default": 5000,
+      "label": "Autoplay delay",
+      "info": "Time between slide transitions"
+    },
+    {
+      "type": "header",
+      "content": "Spacing Settings"
+    },
+    {
+      "type": "select",
+      "id": "padding_top",
+      "label": "Padding top",
+      "default": "pt-8",
+      "options": [
+        {
+          "value": "pt-0",
+          "label": "None"
+        },
+        {
+          "value": "pt-4",
+          "label": "Small"
+        },
+        {
+          "value": "pt-8",
+          "label": "Medium"
+        },
+        {
+          "value": "pt-12",
+          "label": "Large"
+        },
+        {
+          "value": "pt-16",
+          "label": "Extra Large"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "padding_bottom",
+      "label": "Padding bottom",
+      "default": "pb-8",
+      "options": [
+        {
+          "value": "pb-0",
+          "label": "None"
+        },
+        {
+          "value": "pb-4",
+          "label": "Small"
+        },
+        {
+          "value": "pb-8",
+          "label": "Medium"
+        },
+        {
+          "value": "pb-12",
+          "label": "Large"
+        },
+        {
+          "value": "pb-16",
+          "label": "Extra Large"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "margin_top",
+      "label": "Margin top",
+      "default": "mt-0",
+      "options": [
+        {
+          "value": "mt-0",
+          "label": "None"
+        },
+        {
+          "value": "mt-4",
+          "label": "Small"
+        },
+        {
+          "value": "mt-8",
+          "label": "Medium"
+        },
+        {
+          "value": "mt-12",
+          "label": "Large"
+        },
+        {
+          "value": "mt-16",
+          "label": "Extra Large"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "margin_bottom",
+      "label": "Margin bottom",
+      "default": "mb-0",
+      "options": [
+        {
+          "value": "mb-0",
+          "label": "None"
+        },
+        {
+          "value": "mb-4",
+          "label": "Small"
+        },
+        {
+          "value": "mb-8",
+          "label": "Medium"
+        },
+        {
+          "value": "mb-12",
+          "label": "Large"
+        },
+        {
+          "value": "mb-16",
+          "label": "Extra Large"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Style Settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Full width section",
+      "default": false,
+      "info": "Extend section to full browser width"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image_overlay",
+      "name": "Image with Overlay",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Media Settings"
+        },
+        {
+          "type": "select",
+          "id": "content_type",
+          "label": "Content type",
+          "default": "image",
+          "options": [
+            {
+              "value": "image",
+              "label": "Image"
+            },
+            {
+              "value": "video",
+              "label": "Video"
+            }
+          ]
+        },
+        {
+          "type": "image_picker",
+          "id": "image_desktop",
+          "label": "Image (Desktop)"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_mobile",
+          "label": "Image (Mobile)"
+        },
+        {
+          "type": "video",
+          "id": "video_desktop",
+          "label": "Video (Desktop)"
+        },
+        {
+          "type": "video",
+          "id": "video_mobile",
+          "label": "Video (Mobile)"
+        },
+        {
+          "type": "select",
+          "id": "media_fit",
+          "label": "Media fit",
+          "default": "object-cover",
+          "options": [
+            {
+              "value": "object-cover",
+              "label": "Cover"
+            },
+            {
+              "value": "object-contain",
+              "label": "Contain"
+            },
+            {
+              "value": "object-fill",
+              "label": "Fill"
+            }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "aspect_ratio",
+          "label": "Aspect ratio",
+          "default": "aspect-square",
+          "options": [
+            {
+              "value": "aspect-square",
+              "label": "Square (1:1)"
+            },
+            {
+              "value": "aspect-video",
+              "label": "Video (16:9)"
+            },
+            {
+              "value": "aspect-[4/3]",
+              "label": "4:3"
+            },
+            {
+              "value": "aspect-[3/4]",
+              "label": "Portrait (3:4)"
+            },
+            {
+              "value": "aspect-[2/3]",
+              "label": "Portrait (2:3)"
+            }
+          ]
+        },
+        {
+          "type": "header",
+          "content": "Overlay Settings"
+        },
+        {
+          "type": "checkbox",
+          "id": "overlay_enabled",
+          "label": "Enable overlay",
+          "default": false,
+          "info": "Add a dark overlay to improve text readability"
+        },
+        {
+          "type": "select",
+          "id": "overlay_opacity",
+          "label": "Overlay opacity",
+          "default": "opacity-50",
+          "options": [
+            {
+              "value": "opacity-20",
+              "label": "20%"
+            },
+            {
+              "value": "opacity-30",
+              "label": "30%"
+            },
+            {
+              "value": "opacity-40",
+              "label": "40%"
+            },
+            {
+              "value": "opacity-50",
+              "label": "50%"
+            },
+            {
+              "value": "opacity-60",
+              "label": "60%"
+            },
+            {
+              "value": "opacity-70",
+              "label": "70%"
+            }
+          ]
+        },
+        {
+          "type": "header",
+          "content": "Content Settings"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Card Title"
+        },
+        {
+          "type": "textarea",
+          "id": "subheading",
+          "label": "Subheading",
+          "default": "Add a description or details about this item"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button text"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Button link"
+        },
+        {
+          "type": "url",
+          "id": "card_link",
+          "label": "Card link",
+          "info": "Make the entire card clickable"
+        },
+        {
+          "type": "header",
+          "content": "Content Layout"
+        },
+        {
+          "type": "select",
+          "id": "content_vertical_position",
+          "label": "Vertical position",
+          "default": "justify-center",
+          "options": [
+            {
+              "value": "justify-start",
+              "label": "Top"
+            },
+            {
+              "value": "justify-center",
+              "label": "Middle"
+            },
+            {
+              "value": "justify-end",
+              "label": "Bottom"
+            }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "content_horizontal_position",
+          "label": "Horizontal position",
+          "default": "items-center text-center",
+          "options": [
+            {
+              "value": "items-start text-left",
+              "label": "Left"
+            },
+            {
+              "value": "items-center text-center",
+              "label": "Center"
+            },
+            {
+              "value": "items-end text-right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "content_width",
+          "label": "Content width",
+          "default": "w-full",
+          "options": [
+            {
+              "value": "w-full",
+              "label": "Full"
+            },
+            {
+              "value": "w-3/4",
+              "label": "75%"
+            },
+            {
+              "value": "w-1/2",
+              "label": "50%"
+            }
+          ]
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "Color scheme",
+          "default": "scheme-1"
+        }
+      ]
+    },
+    {
+      "type": "rich_text",
+      "name": "Rich Text",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Content Settings"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Content",
+          "default": "<p>Add your rich text content here. You can use <strong>bold</strong>, <em>italic</em>, and other formatting options.</p>"
+        },
+        {
+          "type": "url",
+          "id": "card_link",
+          "label": "Card link",
+          "info": "Make the entire card clickable"
+        },
+        {
+          "type": "header",
+          "content": "Style Settings"
+        },
+        {
+          "type": "select",
+          "id": "padding",
+          "label": "Padding",
+          "default": "p-6",
+          "options": [
+            {
+              "value": "p-0",
+              "label": "None"
+            },
+            {
+              "value": "p-4",
+              "label": "Small"
+            },
+            {
+              "value": "p-6",
+              "label": "Medium"
+            },
+            {
+              "value": "p-8",
+              "label": "Large"
+            },
+            {
+              "value": "p-12",
+              "label": "Extra Large"
+            }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "border_radius",
+          "label": "Border radius",
+          "default": "rounded-lg",
+          "options": [
+            {
+              "value": "rounded-none",
+              "label": "None"
+            },
+            {
+              "value": "rounded",
+              "label": "Small"
+            },
+            {
+              "value": "rounded-lg",
+              "label": "Medium"
+            },
+            {
+              "value": "rounded-xl",
+              "label": "Large"
+            },
+            {
+              "value": "rounded-2xl",
+              "label": "Extra Large"
+            }
+          ]
+        },
+        {
+          "type": "checkbox",
+          "id": "show_border",
+          "label": "Show border",
+          "default": true
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "Color scheme",
+          "default": "scheme-1"
+        }
+      ]
+    },
+    {
+      "type": "review",
+      "name": "Review",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Review Content"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Review title",
+          "default": "Great product!"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Review description",
+          "default": "This product exceeded my expectations. Highly recommend to anyone looking for quality."
+        },
+        {
+          "type": "text",
+          "id": "author",
+          "label": "Author name",
+          "default": "Jane D."
+        },
+        {
+          "type": "range",
+          "id": "rating",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "default": 5,
+          "label": "Star rating"
+        },
+        {
+          "type": "checkbox",
+          "id": "verified_buyer",
+          "label": "Verified buyer",
+          "default": true,
+          "info": "Show verified buyer badge"
+        },
+        {
+          "type": "url",
+          "id": "card_link",
+          "label": "Card link",
+          "info": "Make the entire card clickable"
+        },
+        {
+          "type": "header",
+          "content": "Style Settings"
+        },
+        {
+          "type": "select",
+          "id": "padding",
+          "label": "Padding",
+          "default": "p-6",
+          "options": [
+            {
+              "value": "p-4",
+              "label": "Small"
+            },
+            {
+              "value": "p-6",
+              "label": "Medium"
+            },
+            {
+              "value": "p-8",
+              "label": "Large"
+            }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "border_radius",
+          "label": "Border radius",
+          "default": "rounded-lg",
+          "options": [
+            {
+              "value": "rounded-none",
+              "label": "None"
+            },
+            {
+              "value": "rounded",
+              "label": "Small"
+            },
+            {
+              "value": "rounded-lg",
+              "label": "Medium"
+            },
+            {
+              "value": "rounded-xl",
+              "label": "Large"
+            }
+          ]
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "Color scheme",
+          "default": "scheme-1"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Grid Section",
+      "blocks": [
+        {
+          "type": "image_overlay",
+          "settings": {
+            "heading": "Featured Item 1",
+            "subheading": "Discover our latest collection"
+          }
+        },
+        {
+          "type": "rich_text",
+          "settings": {
+            "content": "<h3>Rich Text Card</h3><p>Share detailed information, announcements, or stories with your customers.</p>"
+          }
+        },
+        {
+          "type": "review",
+          "settings": {
+            "title": "Excellent Quality",
+            "description": "This product exceeded all my expectations. The quality is outstanding and delivery was fast.",
+            "author": "Sarah M.",
+            "rating": 5,
+            "verified_buyer": true
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,76 +1,141 @@
-<product-slider class="relative flex flex-col gap-4">
-  <!-- Main media track -->
-  <div class="flex flex-col gap-3 lg:flex-row-reverse">
-    <div
-      class="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory focus:outline-none no-scrollbar"
-      tabindex="0"
-    >
-      {% liquid
-        assign image_aspect = settings.image_aspect_ratio
-      %}
-      {% for media in product.media %}
-        <div class="w-full snap-start shrink-0 {{ image_aspect }}">
-          {% case media.media_type %}
-            {% when 'image' %}
-              {{
-                media
-                | image_url: width: 1200
-                | image_tag: alt: media.alt, class: 'w-full h-full object-cover block'
-              }}
+{% comment %}
+  Product Gallery - TailwindUI Tab-based Gallery
+  ---------------------------------------------------------
+  Features:
+  - Tab-based navigation with thumbnail grid
+  - Large main image display area
+  - Support for images, videos, 3D models
+  - Mobile-friendly with responsive layout
+  - Accessible with ARIA labels and keyboard navigation
+{% endcomment %}
 
-            {% when 'video' %}
+<el-tab-group class="flex flex-col-reverse" data-product-gallery="{{ section_id }}">
+  <!-- Image selector (Thumbnails) -->
+  <div class="mx-auto mt-6 hidden w-full max-w-2xl sm:block lg:max-w-none">
+    <el-tab-list class="grid grid-cols-4 gap-6" role="tablist">
+      {% for media in product.media %}
+        <button
+          type="button"
+          class="relative flex h-24 cursor-pointer items-center justify-center rounded-md bg-white text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-4"
+          role="tab"
+          aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+          data-media-id="{{ media.id }}"
+          data-gallery-tab
+        >
+          <span class="sr-only">
+            {% case media.media_type %}
+              {% when 'image' %}Image {{ forloop.index }}
+              {% when 'video' %}Video {{ forloop.index }}
+              {% when 'external_video' %}Video {{ forloop.index }}
+              {% when 'model' %}3D Model {{ forloop.index }}
+            {% endcase %}
+          </span>
+          <span class="absolute inset-0 overflow-hidden rounded-md">
+            {% if media.media_type == 'image' or media.preview_image %}
+              {% assign preview = media.preview_image | default: media %}
+              {{
+                preview
+                | image_url: width: 200
+                | image_tag: alt: media.alt, class: 'h-full w-full object-cover object-center'
+              }}
+            {% else %}
+              <div class="h-full w-full flex items-center justify-center bg-gray-100">
+                <svg class="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </div>
+            {% endif %}
+          </span>
+          <span
+            class="pointer-events-none absolute inset-0 rounded-md ring-2 ring-offset-2 ring-transparent aria-selected:ring-indigo-500"
+            aria-hidden="true"
+          ></span>
+        </button>
+      {% endfor %}
+    </el-tab-list>
+  </div>
+
+  <!-- Main image panels -->
+  <el-tab-panels>
+    {% for media in product.media %}
+      <div
+        class="aspect-h-1 aspect-w-1 w-full"
+        role="tabpanel"
+        {% if forloop.first %}aria-hidden="false"{% else %}aria-hidden="true" hidden{% endif %}
+        data-media-id="{{ media.id }}"
+        data-gallery-panel
+      >
+        {% case media.media_type %}
+          {% when 'image' %}
+            <img
+              src="{{ media | image_url: width: 1200 }}"
+              alt="{{ media.alt | escape }}"
+              class="h-full w-full object-cover object-center sm:rounded-lg"
+              data-product-image="{{ section_id }}"
+            />
+
+          {% when 'video' %}
+            <div class="flex items-center justify-center bg-gray-100 sm:rounded-lg">
               <video
                 controls
-                class="object-cover w-full h-full"
+                class="h-full w-full object-cover sm:rounded-lg"
               >
                 {% for source in media.sources %}
                   <source src="{{ source.url }}" type="{{ source.mime_type }}">
                 {% endfor %}
                 Your browser does not support the video tag.
               </video>
+            </div>
 
-            {% when 'external_video' %}
-              {{ media | external_video_tag }}
+          {% when 'external_video' %}
+            <div class="flex items-center justify-center bg-gray-100 sm:rounded-lg overflow-hidden">
+              {{ media | external_video_tag: class: 'h-full w-full' }}
+            </div>
 
-            {% when 'model' %}
-              {{ media | model_viewer_tag }}
-          {% endcase %}
-        </div>
-      {% endfor %}
-    </div>
-    <!-- Thumbnails -->
-    {% if product.media.size > 1 %}
-      <div class="flex justify-center gap-3 mt-2 lg:flex-col">
-        {% for media in product.media %}
-          <button
-            data-thumb
-            class="relative w-16 h-16 overflow-hidden hover:[&>img]:scale-90 [&>img]:transition-transform [&>img]:duration-300 [&>img]:ease-in-out"
-            aria-label="Thumbnail {{ forloop.index }}"
-          >
-            {{
-              media
-              | image_url: width: 200
-              | image_tag: alt: media.alt, class: 'object-cover w-full h-full pointer-events-none'
-            }}
-          </button>
-        {% endfor %}
+          {% when 'model' %}
+            <div class="flex items-center justify-center bg-gray-100 sm:rounded-lg">
+              {{ media | model_viewer_tag: class: 'h-full w-full' }}
+            </div>
+        {% endcase %}
       </div>
-    {% endif %}
-  </div>
+    {% endfor %}
+  </el-tab-panels>
+</el-tab-group>
 
-  <!-- Navigation buttons -->
-  <div class="absolute flex justify-between w-full lg:relative top-1/2">
-    <button
-      class="z-20 transition-opacity duration-200 ease-in-out rotate-180 opacity-0 cursor-pointer slider-nav button-secondary"
-      aria-label="Previous"
-    >
-      {{ 'icon-arrow-short.svg' | inline_asset_content }}
-    </button>
-    <button
-      class="z-20 transition-opacity duration-200 ease-in-out opacity-0 cursor-pointer slider-nav button-secondary"
-      aria-label="Next"
-    >
-      {{ 'icon-arrow-short.svg' | inline_asset_content }}
-    </button>
-  </div>
-</product-slider>
+<script>
+// Simple tab functionality for product gallery
+(function() {
+  const gallery = document.querySelector('[data-product-gallery="{{ section_id }}"]');
+  if (!gallery) return;
+
+  const tabs = gallery.querySelectorAll('[data-gallery-tab]');
+  const panels = gallery.querySelectorAll('[data-gallery-panel]');
+
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => {
+      // Update tabs
+      tabs.forEach(t => {
+        t.setAttribute('aria-selected', 'false');
+        t.querySelector('span[aria-hidden]').classList.remove('aria-selected:ring-indigo-500');
+      });
+      tab.setAttribute('aria-selected', 'true');
+
+      // Update panels
+      panels.forEach(p => {
+        p.setAttribute('aria-hidden', 'true');
+        p.hidden = true;
+      });
+      panels[index].setAttribute('aria-hidden', 'false');
+      panels[index].hidden = false;
+    });
+  });
+
+  // Make gallery accessible via variant changes
+  window.switchToGalleryImage = function(mediaId) {
+    const tab = gallery.querySelector(`[data-gallery-tab][data-media-id="${mediaId}"]`);
+    if (tab) {
+      tab.click();
+    }
+  };
+})();
+</script>

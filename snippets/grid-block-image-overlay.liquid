@@ -1,0 +1,140 @@
+{% # Grid Block - Image with Overlay %}
+
+{% liquid
+  assign block_id = 'grid-block-' | append: block.id
+  assign has_content = false
+
+  if block.settings.heading != blank or block.settings.subheading != blank or block.settings.button_text != blank
+    assign has_content = true
+  endif
+
+  assign is_video = false
+  if block.settings.content_type == 'video'
+    assign is_video = true
+  endif
+
+  # Determine if card should be clickable
+  assign has_card_link = false
+  if block.settings.card_link != blank
+    assign has_card_link = true
+  endif
+%}
+
+{% # Wrapper with optional link %}
+{% if has_card_link %}
+  <a href="{{ block.settings.card_link }}" class="grid-block-image-overlay block group h-full" {{ block.shopify_attributes }}>
+{% else %}
+  <div class="grid-block-image-overlay block h-full" {{ block.shopify_attributes }}>
+{% endif %}
+
+  <div class="relative {{ block.settings.aspect_ratio }} overflow-hidden h-full {% if has_card_link %}transition-transform hover:scale-105{% endif %}">
+
+    {% # Background Media %}
+    <div class="absolute inset-0 w-full h-full">
+      {% if is_video %}
+        {% # Video Content %}
+        {% if block.settings.video_mobile %}
+          <div class="block md:hidden w-full h-full">
+            {{ block.settings.video_mobile | video_tag:
+              autoplay: true,
+              loop: true,
+              muted: true,
+              controls: false,
+              class: 'w-full h-full ' | append: block.settings.media_fit
+            }}
+          </div>
+        {% endif %}
+
+        {% if block.settings.video_desktop %}
+          <div class="hidden md:block w-full h-full">
+            {{ block.settings.video_desktop | video_tag:
+              autoplay: true,
+              loop: true,
+              muted: true,
+              controls: false,
+              class: 'w-full h-full ' | append: block.settings.media_fit
+            }}
+          </div>
+        {% endif %}
+      {% else %}
+        {% # Image Content %}
+        {% if block.settings.image_mobile %}
+          {% assign mobile_classes = 'block md:hidden w-full h-full ' | append: block.settings.media_fit %}
+          {{ block.settings.image_mobile | image_url: width: 800 | image_tag:
+            class: mobile_classes,
+            loading: 'lazy',
+            alt: block.settings.heading
+          }}
+        {% endif %}
+
+        {% if block.settings.image_desktop %}
+          {% assign desktop_classes = 'hidden md:block w-full h-full ' | append: block.settings.media_fit %}
+          {{ block.settings.image_desktop | image_url: width: 1200 | image_tag:
+            class: desktop_classes,
+            loading: 'lazy',
+            alt: block.settings.heading
+          }}
+        {% elsif block.settings.image_mobile %}
+          {% # Fallback: use mobile image on desktop if desktop image not provided %}
+          {% assign desktop_classes = 'hidden md:block w-full h-full ' | append: block.settings.media_fit %}
+          {{ block.settings.image_mobile | image_url: width: 1200 | image_tag:
+            class: desktop_classes,
+            loading: 'lazy',
+            alt: block.settings.heading
+          }}
+        {% endif %}
+
+        {% # Placeholder if no images %}
+        {% unless block.settings.image_mobile or block.settings.image_desktop %}
+          <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+            <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+        {% endunless %}
+      {% endif %}
+    </div>
+
+    {% # Dark Overlay %}
+    {% if block.settings.overlay_enabled %}
+      <div class="absolute inset-0 bg-black {{ block.settings.overlay_opacity }} z-10"></div>
+    {% endif %}
+
+    {% # Text Overlay Content %}
+    {% if has_content %}
+      <div class="absolute inset-0 flex flex-col z-20 p-6 {{ block.settings.content_vertical_position }} {{ block.settings.content_horizontal_position }}">
+        <div class="color-scheme color-scheme--{{ block.settings.color_scheme }} flex flex-col gap-3 {{ block.settings.content_width }}">
+
+          {% if block.settings.heading != blank %}
+            <h3 class="text-xl md:text-2xl font-bold">{{ block.settings.heading }}</h3>
+          {% endif %}
+
+          {% if block.settings.subheading != blank %}
+            <p class="text-sm md:text-base opacity-90">{{ block.settings.subheading }}</p>
+          {% endif %}
+
+          {% if block.settings.button_text != blank and block.settings.button_link != blank %}
+            <div class="mt-2">
+              {% unless has_card_link %}
+                <a href="{{ block.settings.button_link }}" class="button-primary inline-block">
+                  {{ block.settings.button_text }}
+                </a>
+              {% else %}
+                <span class="button-primary inline-block">
+                  {{ block.settings.button_text }}
+                </span>
+              {% endunless %}
+            </div>
+          {% endif %}
+
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+
+{% if has_card_link %}
+  </a>
+{% else %}
+  </div>
+{% endif %}

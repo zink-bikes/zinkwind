@@ -10,13 +10,6 @@
     }
 }
 
-body {
-    display: flex;
-    flex-direction: column;
-    margin: 0;
-    min-height: 100svh;
-}
-
 html:has(dialog[scroll-lock][open], details[scroll-lock][open]) {
     overflow: hidden;
 }
@@ -262,6 +255,76 @@ h6,.h6 {
 
 [data-a11y-dialog="side-cart"][aria-hidden="true"] [data-a11y-dialog-container] {
     transform: translateX(100%);
+}
+
+/* ======================================================
+   MOBILE MENU DRAWER STYLES
+   ====================================================== */
+
+/* Mobile menu visibility control */
+[data-a11y-dialog="mobile-menu"] {
+    /* Visible by default, will be controlled by aria-hidden */
+}
+
+/* Hide when aria-hidden="true" */
+[data-a11y-dialog="mobile-menu"][aria-hidden="true"] {
+    display: none !important;
+}
+
+/* Overlay */
+[data-a11y-dialog="mobile-menu"] [data-a11y-dialog-overlay] {
+    background-color: rgba(0, 0, 0, 0.5);
+    transition: opacity 0.3s ease;
+    z-index: 50;
+}
+
+/* Mobile Menu Container - Full Width */
+[data-a11y-dialog="mobile-menu"] [data-a11y-dialog-container] {
+    position: fixed;
+    top: 0;
+    height: 100vh;
+    width: 100%;
+    transition: transform 0.3s ease;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    z-index: 51;
+}
+
+/* Slide from left (default) */
+[data-a11y-dialog="mobile-menu"] [data-a11y-dialog-container][data-slide-direction="from-left"] {
+    left: 0;
+    transform: translateX(-100%);
+}
+
+/* Show panel when dialog is open (aria-hidden removed or false) */
+[data-a11y-dialog="mobile-menu"]:not([aria-hidden]) [data-a11y-dialog-container][data-slide-direction="from-left"],
+[data-a11y-dialog="mobile-menu"][aria-hidden="false"] [data-a11y-dialog-container][data-slide-direction="from-left"] {
+    transform: translateX(0);
+}
+
+[data-a11y-dialog="mobile-menu"][aria-hidden="true"] [data-a11y-dialog-container][data-slide-direction="from-left"] {
+    transform: translateX(-100%);
+}
+
+/* Slide from right */
+[data-a11y-dialog="mobile-menu"] [data-a11y-dialog-container][data-slide-direction="from-right"] {
+    right: 0;
+    transform: translateX(100%);
+}
+
+/* Show panel when dialog is open (aria-hidden removed or false) */
+[data-a11y-dialog="mobile-menu"]:not([aria-hidden]) [data-a11y-dialog-container][data-slide-direction="from-right"],
+[data-a11y-dialog="mobile-menu"][aria-hidden="false"] [data-a11y-dialog-container][data-slide-direction="from-right"] {
+    transform: translateX(0);
+}
+
+[data-a11y-dialog="mobile-menu"][aria-hidden="true"] [data-a11y-dialog-container][data-slide-direction="from-right"] {
+    transform: translateX(100%);
+}
+
+/* Sub-menu transitions */
+[data-a11y-dialog="mobile-menu"] .sub-menu {
+    transition: max-height 0.3s ease;
 }
 
 /* ======================================================
